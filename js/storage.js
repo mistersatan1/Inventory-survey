@@ -12,8 +12,8 @@
  * ===================================================================== */
 const storage = (() => {
   const DB_NAME = 'inventory-survey';
-  const VERSION = 1;
-  const STORES = ['meta', 'categories', 'items', 'groups', 'movements', 'monthData', 'months', 'checkpoints'];
+  const VERSION = 2; // 2: tombstones(지움 표시) 저장소 추가 — 기존 데이터는 그대로
+  const STORES = ['meta', 'categories', 'items', 'groups', 'movements', 'monthData', 'months', 'checkpoints', 'tombstones'];
   let db = null;
   let mode = 'idb';
   const mem = {};
@@ -42,10 +42,13 @@ const storage = (() => {
         };
         r.onsuccess = () => res(r.result);
         r.onerror = () => rej(r.error);
-        r.onblocked = () => rej(new Error('blocked'));
+        // 다른 탭이 예전 버전으로 열려 있으면 업그레이드가 막힌다 → 빈 임시 저장소로 넘어가지 말고 알린다
+        r.onblocked = () => { const e = new Error('이 앱이 다른 탭이나 창에서도 열려 있어요. 다른 탭을 모두 닫고 새로고침해 주세요.'); e.blocked = true; rej(e); };
       });
+      db.onversionchange = () => { db.close(); }; // 새 버전이 열리면 이 탭은 양보
       mode = 'idb';
     } catch (e) {
+      if (e && e.blocked) throw e;
       console.warn('IndexedDB를 쓸 수 없어 localStorage로 저장합니다.', e);
       mode = 'local';
       loadLocal();

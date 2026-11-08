@@ -143,6 +143,7 @@ const actions = {
   'start-stock': () => startStock(),
   'xl-import': () => openExcelImport(),
   'order-list': () => openOrderList(),
+  'share-backup': () => shareBackup(),
   'count-empty': () => { S.onlyEmpty = true; go('count'); },
   'new-item': () => { if (!catsFor(S.shop).length) toast('카테고리가 없어 새로 만들어요. 아래에서 이름을 넣어 주세요.'); openItemEditor(null, { cat: S.invCat }); },
   'edit-item': el => openItemEditor(el.dataset.id),
