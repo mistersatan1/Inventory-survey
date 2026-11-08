@@ -36,8 +36,8 @@ function renderMonth(main) {
         <td class="n" data-label="− ${esc(label)}">${ro ? `<span class="v-sales">${fmt(c.sales)}</span>` : `<input class="mini-in" data-f="sales" inputmode="decimal" value="${c.salesSet ? plain(c.sales) : ''}" placeholder="0" aria-label="${esc(i.name)} ${esc(label)} 수량"><span class="print-val">${fmt(c.sales)}</span>`}</td>
         <td class="n exp" data-label="= 예상 재고"><span class="v-exp">${fmt(c.expected)}</span></td>
         <td class="n act" data-label="실사 재고">${ro ? `<span class="v-act"></span>` : `<div class="act-box">
-            <label>박스<input class="mini-in" data-f="box" inputmode="decimal" value="${plain(c.box)}" ${i.boxQty ? '' : 'disabled placeholder="–"'} aria-label="${esc(i.name)} 박스 수량"></label>
-            <label>낱개<input class="mini-in" data-f="ea" inputmode="decimal" value="${plain(c.ea)}" aria-label="${esc(i.name)} 낱개 수량"></label>
+            <label><span class="lab">박스</span><input class="mini-in" data-f="box" inputmode="decimal" value="${plain(c.box)}" ${i.boxQty ? 'placeholder="박스"' : 'disabled placeholder="–"'} aria-label="${esc(i.name)} 박스 수량"></label>
+            <label><span class="lab">낱개</span><input class="mini-in" data-f="ea" inputmode="decimal" value="${plain(c.ea)}" placeholder="낱개" aria-label="${esc(i.name)} 낱개 수량"></label>
             <output class="v-act screen-only"></output><span class="print-val v-actp"></span></div>`}</td>
         <td class="n" data-label="오차"><span class="v-diff"></span></td>
         <td data-label="오차 사유">${ro ? `<span class="v-reasonp"></span>` : `<input class="mini-in wide" data-f="reason" value="${esc(c.reason)}" placeholder="사유 (선택)" aria-label="${esc(i.name)} 오차 사유"><span class="print-val v-reasonp"></span>`}</td>
@@ -57,7 +57,7 @@ function renderMonth(main) {
     </div>
     ${confirmed ? `<div class="banner lock no-print"><span class="b-ico">🔒</span><div><b>${mLabel(ym)} 재고는 ${fmtDateTime(rec.confirmedAt)}에 확정되었어요 (작성자 ${esc(rec.author || '–')}).</b>읽기 전용이에요. 확정한 실사 재고가 ${mLabel(addMonth(ym, 1))} 전월 재고로 들어가 있어요.</div></div>` : ''}
     ${firstMonthBanner}
-    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards" id="monthTbl"><thead><tr><th>품목</th><th class="n">전월 재고</th><th class="n">+ 반입</th><th class="n">− 반출</th><th class="n">− ${esc(label)}</th><th class="n">= 예상 재고</th><th class="n">실사 재고</th><th class="n">오차</th><th>오차 사유</th></tr></thead>
+    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">전월 재고</th><th class="n">+ 반입</th><th class="n">− 반출</th><th class="n">− ${esc(label)}</th><th class="n">= 예상 재고</th><th class="n">실사 재고<small class="th-sub">박스 · 낱개 → 합계</small></th><th class="n">오차</th><th>오차 사유</th></tr></thead>
       <tbody>${body}</tbody></table></div>
       <p class="legend"><span class="minus-note">마이너스(−)는 부족을 의미</span>
       <span class="muted">예상 재고 = 전월 재고 + 반입 − 반출 − ${esc(label)}</span><span class="muted">오차 = 실사 재고 − 예상 재고</span></p>
