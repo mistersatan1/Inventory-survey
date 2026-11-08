@@ -40,7 +40,7 @@ function countRowHTML(item, ym) {
       <span class="state v-state"></span></div>
     <div class="crow-in">
       <label><span class="lab">박스</span><input data-f="box" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.box)}" ${dis} ${noBox ? 'disabled placeholder="없음"' : 'placeholder=" "'} aria-label="${nm} 박스 수량"></label>
-      <label><span class="lab">낱개</span><input data-f="ea" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.ea)}" placeholder=" " ${dis} aria-label="${nm} 낱개 수량"></label>
+      <label><span class="lab">${esc(unitLabel(item))}</span><input data-f="ea" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.ea)}" placeholder=" " ${dis} aria-label="${nm} ${esc(unitLabel(item))} 수량"></label>
       <label><span class="lab">${esc(salesLabel())}</span><input data-f="sales" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${c.salesSet || c.locked ? plain(c.sales) : ''}" placeholder="0" ${dis} aria-label="${nm} ${esc(SHOPS[S.shop].salesLong)}"></label>
     </div>
     <div class="crow-side">

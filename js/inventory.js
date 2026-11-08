@@ -47,6 +47,8 @@ const Calc = {
       ['현재 재고: 실사 100 이후 반출 30 → 70', Calc.currentStock({ value: 100, date: '2026-11-05', ts: 5 },
         [{ date: '2026-11-04', type: 'in', qty: 50, createdAt: 1 }, { date: '2026-11-06', type: 'out', qty: 30, createdAt: 9 }], 0), 70],
       ['다음 달 전월 재고 = 확정 실사 7857', Calc.nextPrev(7857), 7857],
+      ['소수점: 흙 1포대 반입 − 사용 0.3 → 0.7 (0.30000000000000004 같은 오차 없음)', Calc.expected(0, 1, 0, 0.3), 0.7],
+      ['소수점: 센 수 0.7 − 있어야 할 수 0.7 → 차이 0', Calc.diff(Calc.countTotal(0, 0, 0.7), Calc.expected(0, 1, 0, 0.3)), 0],
     ];
     let pass = 0;
     const lines = cases.map(([name, got, want]) => { const ok = got === want; if (ok) pass++; return `${ok ? '✅' : '❌'} ${name}  (결과: ${got})`; });
@@ -183,6 +185,8 @@ function avatar(item, size = '', zoom = false) {
   return zoom ? `<button type="button" class="${cls}" data-act="zoom" data-id="${item.id}" aria-label="${esc(item.name)} 사진 크게 보기">${inner}</button>`
     : `<span class="${cls}" aria-hidden="true">${inner}</span>`;
 }
+/** 낱개 칸의 이름: 단위가 개·ea면 '낱개', 포대·g 같은 단위면 그 단위 (흙 0.3포대처럼 소수점도 됨) */
+function unitLabel(item) { const u = String(item?.unit || '').trim(); return !u || /^(개|ea)$/i.test(u) ? '낱개' : u; }
 const commonBadge = item => isCommon(item) ? ' <span class="badge common">공용</span>' : '';
 const boxInfo = item => item.boxQty ? `1박스=${fmt(item.boxQty)}${esc(item.unit || 'ea')}` : '박스 기준 없음';
 const salesLabel = () => SHOPS[S.shop].sales;

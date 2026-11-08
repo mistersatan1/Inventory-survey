@@ -45,6 +45,7 @@ function bindMovForm(root, m, onTypeChange) {
     $$('[data-seg=unit] button', root).forEach(b => { const on = b.dataset.v === st.unit; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     const it = DB.items.get(st.itemId);
     const boxBtn = $('[data-seg=unit] [data-v=box]', root);
+    $('[data-seg=unit] [data-v=ea]', root).textContent = it ? unitLabel(it) : '낱개';
     boxBtn.disabled = !!it && !it.boxQty;
     if (it && !it.boxQty && st.unit === 'box') { st.unit = 'ea'; return paintSeg(); }
     paintConv();
@@ -55,7 +56,7 @@ function bindMovForm(root, m, onTypeChange) {
     if (!it || !v) { conv.hidden = true; return; }
     conv.hidden = false;
     const u = esc(it.unit || 'ea');
-    conv.innerHTML = st.unit === 'box' ? `${fmt(v)}박스 = <b>${fmt(v * it.boxQty)}${u}</b> 로 저장돼요 (1박스 ${fmt(it.boxQty)}${u})` : `낱개 <b>${fmt(v)}${u}</b> 로 저장돼요`;
+    conv.innerHTML = st.unit === 'box' ? `${fmt(v)}박스 = <b>${fmt(v * it.boxQty)}${u}</b> 로 저장돼요 (1박스 ${fmt(it.boxQty)}${u})` : `<b>${fmt(v)}${u}</b>로 저장돼요`;
   }
   btn.addEventListener('click', () => openPop(pop.hidden));
   q.addEventListener('input', paintList);

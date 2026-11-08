@@ -134,7 +134,7 @@ function openItemEditor(id, opts = {}) {
   const cats = catsFor(S.shop);
   let photo = it ? it.photo || null : null;
   const defCat = it ? it.categoryId : (opts.cat && opts.cat !== 'all' ? opts.cat : cats[0]?.id || '__new');
-  const units = ['개', 'ea', 'g', 'kg', 'ml', '매', '장', '포', '병', '세트'];
+  const units = ['개', 'ea', '포대', '봉', '통', '롤', 'g', 'kg', 'L', 'ml', '매', '장', '포', '병', '세트'];
   const body = `
     <div class="photo-edit"><span id="phPrev"></span>
       <div class="btn-row" style="flex-direction:column;align-items:stretch;flex:1">
@@ -148,7 +148,7 @@ function openItemEditor(id, opts = {}) {
         <option value="__new" ${defCat === '__new' ? 'selected' : ''}>＋ 새 카테고리 만들기</option></select></label>
       <div class="full" id="newCatBox" hidden><div class="form-grid"><label class="fld full"><span>새 카테고리 이름</span><input class="inp" id="iNewCat" autocomplete="off"></label>
         <div class="fld full scope"><label><input type="radio" name="iScope" value="${S.shop}" checked> ${SHOPS[S.shop].name} 전용</label><label><input type="radio" name="iScope" value="common"> 공동비품 (공용)</label></div></div></div>
-      <label class="fld"><span>단위</span><input class="inp" id="iUnit" list="unitList" value="${esc(it?.unit || '개')}" autocomplete="off"><datalist id="unitList">${units.map(u => `<option value="${u}">`).join('')}</datalist></label>
+      <label class="fld"><span>단위</span><input class="inp" id="iUnit" list="unitList" value="${esc(it?.unit || '개')}" autocomplete="off"><datalist id="unitList">${units.map(u => `<option value="${u}">`).join('')}</datalist><small class="muted">흙처럼 나눠 쓰면 ‘포대’로 두고 0.3처럼 소수점으로 적어요</small></label>
       <label class="fld"><span>1박스 기준 수량</span><input class="inp num" id="iBox" inputmode="decimal" value="${plain(it?.boxQty)}" placeholder="예: 24"><small class="muted">박스 없이 세면 비워 두세요</small></label>
       <label class="fld"><span>부족 기준 수량 (선택)</span><input class="inp num" id="iLow" inputmode="decimal" value="${plain(it?.lowStock)}" placeholder="이 수량 이하면 ‘부족’"></label>
       <label class="fld full"><span>메모 (선택)</span><input class="inp" id="iMemo" value="${esc(it?.memo || '')}" autocomplete="off"></label>

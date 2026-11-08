@@ -37,7 +37,7 @@ function renderMonth(main) {
         <td class="n exp" data-label="= 있어야 할 수"><span class="v-exp">${fmt(c.expected)}</span></td>
         <td class="n act" data-label="센 수">${ro ? `<span class="v-act"></span>` : `<div class="act-box">
             <label><span class="lab">박스</span><input class="mini-in" data-f="box" inputmode="decimal" value="${plain(c.box)}" ${i.boxQty ? 'placeholder="박스"' : 'disabled placeholder="–"'} aria-label="${esc(i.name)} 박스 수량"></label>
-            <label><span class="lab">낱개</span><input class="mini-in" data-f="ea" inputmode="decimal" value="${plain(c.ea)}" placeholder="낱개" aria-label="${esc(i.name)} 낱개 수량"></label>
+            <label><span class="lab">${esc(unitLabel(i))}</span><input class="mini-in" data-f="ea" inputmode="decimal" value="${plain(c.ea)}" placeholder="${esc(unitLabel(i))}" aria-label="${esc(i.name)} ${esc(unitLabel(i))} 수량"></label>
             <output class="v-act screen-only"></output><span class="print-val v-actp"></span></div>`}</td>
         <td class="n" data-label="차이"><span class="v-diff"></span></td>
         <td data-label="차이 난 까닭">${ro ? `<span class="v-reasonp"></span>` : `<input class="mini-in wide" data-f="reason" value="${esc(c.reason)}" placeholder="까닭 (선택)" aria-label="${esc(i.name)} 차이 난 까닭"><span class="print-val v-reasonp"></span>`}</td>
