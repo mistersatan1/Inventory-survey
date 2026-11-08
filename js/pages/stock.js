@@ -14,7 +14,7 @@ function renderInv(main) {
   const stat = (k, label) => `<button class="stat ${k}" data-act="inv-st" data-k="${k}" aria-pressed="${S.invSt === k}"><span class="k"><span class="dot"></span>${label}</span><span class="v">${cnt(k)}</span></button>`;
   main.innerHTML = `
     <div class="page-head"><div><h1 class="page-h">${SHOPS[S.shop].name} 전체 재고</h1><p class="page-sub">지금 창고에 있는 수예요. 마지막으로 센 수에 그 뒤 반입·반출을 더하고 빼서 계산해요.</p></div>
-      <div class="btn-row"><button class="btn sm" data-act="new-cat">카테고리 추가</button><button class="btn sm primary" data-act="new-item">${svg('plus')}품목 추가</button></div></div>
+      <div class="btn-row">${cnt('low') + cnt('none') ? `<button class="btn sm primary" data-act="order-list">${svg('file')}주문할 것 (${cnt('low') + cnt('none')})</button>` : ''}<button class="btn sm" data-act="xl-import">엑셀에서 붙여넣기</button><button class="btn sm" data-act="new-cat">카테고리 추가</button><button class="btn sm" data-act="new-item">${svg('plus')}품목 추가</button></div></div>
     <div class="stats" role="group" aria-label="상태별로 보기">${stat('ok', '넉넉')}${stat('low', '부족')}${stat('none', '없음')}</div>
     <div class="search" style="margin-bottom:var(--s-3)">${svg('search')}<input class="inp" id="invQ" type="search" value="${esc(S.invQ)}" placeholder="품목 찾기 (초성도 돼요)" aria-label="품목 찾기" autocomplete="off"></div>
     <div class="chips" style="margin-bottom:var(--s-4)" role="group" aria-label="카테고리">

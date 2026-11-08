@@ -73,6 +73,8 @@
 | `js/pages/month.js` | 월말 정산 화면 (확정·CSV·인쇄) |
 | `js/pages/manage.js` | 품목·카테고리·조사 묶음 관리 화면 |
 | `js/pages/settings.js` | 설정·백업 화면 |
+| `js/import.js` | 엑셀 붙여넣기로 품목·재고 한 번에 등록 |
+| `js/order.js` | 주문할 것 목록 (추천 수량, 복사·공유·CSV) |
 | `js/app.js` | 매장 전환·메뉴 이동, 첫 실행, 클릭·입력 연결, 앱 시작 |
 | `tests/calc.test.js` | 계산 규칙 테스트 (`node tests/calc.test.js`) |
 

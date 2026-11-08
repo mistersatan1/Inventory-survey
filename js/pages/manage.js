@@ -106,7 +106,7 @@ function renderItemTab(box) {
   const arch = all.filter(i => i.archived);
   const show = S.showArchived ? arch : all.filter(i => !i.archived);
   const cats = catsFor(S.shop);
-  box.innerHTML = `<div class="page-head"><div class="btn-row"><button class="btn primary" data-act="new-item">${svg('plus')}품목 추가</button></div>
+  box.innerHTML = `<div class="page-head"><div class="btn-row"><button class="btn primary" data-act="new-item">${svg('plus')}품목 추가</button><button class="btn" data-act="xl-import">엑셀에서 붙여넣기</button></div>
     <button class="btn sm" data-act="toggle-archive">${S.showArchived ? '← 사용 중인 품목 보기' : `보관함 (${arch.length})`}</button></div>
     ${S.showArchived ? '<div class="banner info"><span class="b-ico">📦</span><div><b>보관함</b>보관한 품목은 재고 세기·목록에서 숨겨지지만 지난 기록은 그대로 남아요.</div></div>' : ''}
     ${show.length ? cats.map(c => { const its = show.filter(i => i.categoryId === c.id); if (!its.length) return ''; return `<div class="sec-title"><span>${esc(c.name)} ${c.shop === 'common' ? '<span class="badge common">공용</span>' : ''}</span><span>${its.length}개</span></div>

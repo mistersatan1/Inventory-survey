@@ -116,13 +116,15 @@ async function firstRun() {
   const v = await openModal({ title: '재고조사를 시작해요', dismissable: false,
     body: `<p style="margin-top:0">처음 오셨네요. 어떻게 시작할까요?</p>
       <ul class="small muted" style="padding-left:18px;margin:0"><li><b>샘플 데이터</b>: 기념품숍·체험장·공동비품 카테고리와 품목 몇 개가 들어가요. 둘러본 뒤 지우거나 고쳐 쓰면 돼요.</li>
+      <li><b>엑셀에서 붙여넣기</b>: 지금 쓰는 엑셀 재고표를 복사해 붙여넣으면 품목과 재고가 한 번에 들어가요.</li>
       <li><b>빈 상태</b>: 카테고리와 품목을 직접 등록해요.</li></ul>`,
-    actions: [{ label: '빈 상태로 시작', value: 'empty' }, { label: '샘플 데이터 넣기', value: 'sample', cls: 'primary' }] });
+    actions: [{ label: '빈 상태로 시작', value: 'empty' }, { label: '엑셀에서 붙여넣기', value: 'excel' }, { label: '샘플 데이터 넣기', value: 'sample', cls: 'primary' }] });
   if (v === 'sample') { const d = sampleData(); for (const s of ['categories', 'items', 'groups', 'movements']) await saveMany(s, d[s]); }
   await meta.set('initializedAt', Date.now());
   S.page = 'count';
   render();
   if (v === 'empty') toast('먼저 품목·카테고리 관리에서 카테고리를 만들어 주세요');
+  if (v === 'excel') openExcelImport();
 }
 
 /* =====================================================================
@@ -139,6 +141,8 @@ const actions = {
   'cp-history': () => showCheckpoints(),
   'paste-sales': () => pasteSales(),
   'start-stock': () => startStock(),
+  'xl-import': () => openExcelImport(),
+  'order-list': () => openOrderList(),
   'count-empty': () => { S.onlyEmpty = true; go('count'); },
   'new-item': () => { if (!catsFor(S.shop).length) toast('카테고리가 없어 새로 만들어요. 아래에서 이름을 넣어 주세요.'); openItemEditor(null, { cat: S.invCat }); },
   'edit-item': el => openItemEditor(el.dataset.id),
