@@ -46,3 +46,17 @@ emilkowalski/skills 17개 중 `write-swift`(Swift 앱용), `animate-expo`(React 
 - `unslop`: `scripts/snapshot.mjs`는 열린 페이지의 스타일시트를 읽고, `scripts/story.mjs`는 로컬 ffmpeg로 전후 비교 영상을 만든다.
 - `figma-*`: Figma MCP 서버(`.mcp.json`의 `figma`)가 연결되고 Figma 로그인이 되어 있어야 동작한다.
 - 이 저장소의 재고 앱은 "외부 라이브러리·웹폰트 최소화, 오프라인 동작"이 원칙이다. 웹폰트·CDN을 권하는 스킬(taste, ui-ux-pro-max 등)의 제안은 이 원칙과 충돌하면 따르지 않는다.
+
+## 스킬 로딩 정책 (토큰 절약, 2026-11-08)
+`.claude/settings.json`의 `skillOverrides`로 정한다. 스킬 파일 자체는 수정하지 않았다.
+
+- **항상 켜짐(`on`, 설명까지 매 세션 로드)**: `skill-catalog`, `token-efficient-workflow`
+- **필요할 때(`name-only`, 이름만 로드)**: 나머지 53개. 작업을 시작할 때 `skill-catalog`가 고를 스킬을 알려준다.
+- **끔(`off`)**: 없음
+- **이 프로젝트에 맞지 않아 뺀 스킬**: 없음 (이번 정리에서 추가로 뺀 것 없음)
+- 스킬 목록이 매 세션 차지하는 크기(추정): 정리 전 약 21,957자 → 정리 후 약 1,204자
+- `token-efficient-workflow`: mistersatan1/schedule-management의 같은 이름 스킬을 바탕으로 프로젝트 고유 문구(근무 시간 계산)만 일반화하고 "스킬·에이전트" 절을 더했다.
+- `skill-catalog`: 이 저장소에 있는 필요 시 스킬의 용도표. 새로 만든 파일이다.
+
+스킬을 다시 켜려면 `skillOverrides`에서 값을 `"on"`으로 바꾸거나 줄을 지운다. 로컬에서만 바꾸려면 Claude Code의 `/skills` 메뉴(저장 위치 `.claude/settings.local.json`)를 쓴다.
+이 프로젝트에서 뺀 스킬이 필요하면 mistersatan1/Inventory-survey의 `.claude/skills/`(또는 원본 저장소)에서 폴더를 복사해 온다.
