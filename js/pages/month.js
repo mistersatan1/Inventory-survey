@@ -57,7 +57,7 @@ function renderMonth(main) {
     </div>
     ${confirmed ? `<div class="banner lock no-print"><span class="b-ico">🔒</span><div><b>${mLabel(ym)} 재고는 ${fmtDateTime(rec.confirmedAt)}에 확정되었어요 (작성자 ${esc(rec.author || '–')}).</b>읽기 전용이에요. 확정한 실사 재고가 ${mLabel(addMonth(ym, 1))} 전월 재고로 들어가 있어요.</div></div>` : ''}
     ${firstMonthBanner}
-    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">전월 재고</th><th class="n">+ 반입</th><th class="n">− 반출</th><th class="n">− ${esc(label)}</th><th class="n">= 예상 재고</th><th class="n">실사 재고<small class="th-sub">박스 · 낱개 → 합계</small></th><th class="n">오차</th><th>오차 사유</th></tr></thead>
+    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">전월 재고</th><th class="n">+&nbsp;반입</th><th class="n">−&nbsp;반출</th><th class="n">−&nbsp;${esc(label)}</th><th class="n">=&nbsp;예상 재고</th><th class="n">실사 재고<small class="th-sub">박스 · 낱개 → 합계</small></th><th class="n">오차</th><th>오차 사유</th></tr></thead>
       <tbody>${body}</tbody></table></div>
       <p class="legend"><span class="minus-note">마이너스(−)는 부족을 의미</span>
       <span class="muted">예상 재고 = 전월 재고 + 반입 − 반출 − ${esc(label)}</span><span class="muted">오차 = 실사 재고 − 예상 재고</span></p>
