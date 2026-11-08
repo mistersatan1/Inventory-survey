@@ -5,20 +5,20 @@
  * 6. 셸: 매장 전환, 메뉴, 알림 띠
  * ===================================================================== */
 const PAGES = [
-  { id: 'count', label: '재고조사', title: '재고조사 · 중간점검' },
-  { id: 'mov', label: '반출입', title: '반출입 기록' },
-  { id: 'inv', label: '전체 재고', title: '전체 재고' },
-  { id: 'month', label: '월말 정산', title: '월말 정산' },
-  { id: 'manage', label: '품목 관리', title: '품목·카테고리 관리' },
-  { id: 'settings', label: '설정·백업', title: '설정·백업' },
+  { id: 'count', label: '재고조사', short: '세기', title: '재고조사 · 중간점검' },
+  { id: 'mov', label: '반출입', short: '반출입', title: '반출입 기록' },
+  { id: 'inv', label: '전체 재고', short: '재고', title: '전체 재고' },
+  { id: 'month', label: '월말 정산', short: '월말', title: '월말 정산' },
+  { id: 'manage', label: '품목 관리', short: '품목', title: '품목·카테고리 관리' },
+  { id: 'settings', label: '설정·백업', short: '백업', title: '설정·백업' },
 ];
 function renderShell() {
   document.body.dataset.shop = S.shop;
   $('meta[name=theme-color]').content = SHOPS[S.shop].color;
   const sh = SHOPS[S.shop];
-  $('#shopSwitch').innerHTML = `<button class="shop-btn" id="shopBtn" aria-haspopup="true" aria-expanded="false" aria-label="매장 바꾸기, 지금 ${sh.name}"><span class="shop-ico" aria-hidden="true">${sh.icon}</span>${sh.name}${svg('down')}</button>
-    <div class="shop-menu" id="shopMenu" hidden role="menu">
-      ${Object.entries(SHOPS).map(([k, v]) => `<button class="shop-opt" role="menuitem" data-act="shop" data-shop="${k}" aria-current="${k === S.shop}">
+  $('#shopSwitch').innerHTML = `<button class="shop-btn" id="shopBtn" aria-expanded="false" aria-controls="shopMenu" aria-label="매장 바꾸기, 지금 ${sh.name}"><span class="shop-ico" aria-hidden="true">${sh.icon}</span>${sh.name}${svg('down')}</button>
+    <div class="shop-menu" id="shopMenu" hidden>
+      ${Object.entries(SHOPS).map(([k, v]) => `<button class="shop-opt" data-act="shop" data-shop="${k}" aria-current="${k === S.shop}">
         <span class="dot" style="background:${v.color}" aria-hidden="true">${v.icon}</span><span>${v.name}<small>${k === S.shop ? '지금 보는 매장' : '이 매장으로 바꾸기'}</small></span></button>`).join('')}
     </div>`;
   const p = PAGES.find(x => x.id === S.page);
@@ -26,7 +26,7 @@ function renderShell() {
   document.title = `${p.label} · ${sh.name} 재고`;
   const t = todayStr();
   $('#topDate').textContent = `${dShort(t)} (${'일월화수목금토'[new Date().getDay()]})`;
-  $('#nav').innerHTML = PAGES.map(pg => `<a href="#${pg.id}" data-act="nav" data-page="${pg.id}" ${pg.id === S.page ? 'aria-current="page"' : ''}><span class="nav-ico">${svg(pg.id)}</span><span class="nav-label">${pg.label}</span></a>`).join('');
+  $('#nav').innerHTML = PAGES.map(pg => `<a href="#${pg.id}" data-act="nav" data-page="${pg.id}" ${pg.id === S.page ? 'aria-current="page"' : ''}><span class="nav-ico">${svg(pg.id)}</span><span class="nav-label"><span class="t-short">${pg.short}</span><span class="t-long">${pg.label}</span></span></a>`).join('');
   document.body.classList.toggle('has-bottom-bar', S.page === 'count');
   renderNotice();
 }
@@ -202,6 +202,10 @@ document.addEventListener('keydown', e => {
   const all = $$('#main input[data-f]').filter(x => !x.disabled && x.offsetParent !== null);
   const next = all[all.indexOf(el) + 1];
   if (next) { next.focus(); next.select && next.select(); next.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else el.blur();
+});
+document.addEventListener('focusout', e => {
+  const sw = $('#shopSwitch'); const m = $('#shopMenu');
+  if (sw && m && !m.hidden && sw.contains(e.target) && !sw.contains(e.relatedTarget)) toggleShopMenu(false);
 });
 window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (PAGES.some(x => x.id === p) && p !== S.page) go(p); });
 /* =====================================================================

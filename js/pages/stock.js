@@ -17,9 +17,9 @@ function renderInv(main) {
       <div class="btn-row"><button class="btn sm" data-act="new-cat">카테고리 추가</button><button class="btn sm primary" data-act="new-item">${svg('plus')}품목 추가</button></div></div>
     <div class="stats" role="group" aria-label="상태별로 보기">${stat('ok', '넉넉')}${stat('low', '부족')}${stat('none', '없음')}</div>
     <div class="search" style="margin-bottom:var(--s-3)">${svg('search')}<input class="inp" id="invQ" type="search" value="${esc(S.invQ)}" placeholder="품목 찾기 (초성도 돼요)" aria-label="품목 찾기" autocomplete="off"></div>
-    <div class="chips" style="margin-bottom:var(--s-4)" role="tablist" aria-label="카테고리">
-      <button class="chip ${S.invCat === 'all' ? 'on' : ''}" data-act="inv-cat" data-id="all" role="tab" aria-selected="${S.invCat === 'all'}">전체 ${items.length}</button>
-      ${cats.map(c => `<button class="chip ${S.invCat === c.id ? 'on' : ''}" data-act="inv-cat" data-id="${c.id}" role="tab" aria-selected="${S.invCat === c.id}">${esc(c.name)}${c.shop === 'common' ? ' · 공용' : ''}</button>`).join('')}
+    <div class="chips" style="margin-bottom:var(--s-4)" role="group" aria-label="카테고리">
+      <button class="chip ${S.invCat === 'all' ? 'on' : ''}" data-act="inv-cat" data-id="all" aria-pressed="${S.invCat === 'all'}">전체 ${items.length}</button>
+      ${cats.map(c => `<button class="chip ${S.invCat === c.id ? 'on' : ''}" data-act="inv-cat" data-id="${c.id}" aria-pressed="${S.invCat === c.id}">${esc(c.name)}${c.shop === 'common' ? ' · 공용' : ''}</button>`).join('')}
     </div>
     ${S.invSt ? `<div class="banner info"><span class="b-ico">🔎</span><div><b>‘${{ ok: '넉넉', low: '부족', none: '없음' }[S.invSt]}’ 품목만 보고 있어요</b><button class="btn sm" data-act="inv-st" data-k="${S.invSt}">모두 보기</button></div></div>` : ''}
     <div id="invTable"></div>`;

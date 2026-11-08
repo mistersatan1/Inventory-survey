@@ -158,9 +158,14 @@ function diffHTML(d) {
   if (d === 0) return '<span class="diff match">✓ 딱 맞아요</span>';
   return d < 0 ? `<span class="diff minus">${fmtS(d)} <small>부족</small></span>` : `<span class="diff plus">${fmtS(d)} <small>더 많음</small></span>`;
 }
+/** 사진이 없을 때 쓰는 글자: '유리병 소' → '유소'처럼 첫 낱말과 끝 낱말의 첫 글자 */
+function initials(name) {
+  const w = String(name || '?').trim().split(/\s+/).filter(Boolean);
+  return w.length > 1 ? w[0].charAt(0) + w[w.length - 1].charAt(0) : (w[0] || '?').charAt(0);
+}
 function avatar(item, size = '', zoom = false) {
   const cls = `av ${size} ${item.photo ? '' : 'ph'}`;
-  const inner = item.photo ? `<img src="${item.photo}" alt="">` : esc((item.name || '?').trim().charAt(0));
+  const inner = item.photo ? `<img src="${item.photo}" alt="">` : esc(initials(item.name));
   return zoom ? `<button type="button" class="${cls}" data-act="zoom" data-id="${item.id}" aria-label="${esc(item.name)} 사진 크게 보기">${inner}</button>`
     : `<span class="${cls}" aria-hidden="true">${inner}</span>`;
 }

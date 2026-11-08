@@ -8,17 +8,17 @@ function movFormHTML(m) {
   const type = m ? m.type : 'in'; const unit = m ? m.inputUnit : 'box';
   return `<div class="form-grid mov">
     <label class="fld"><span>날짜</span><input class="inp" type="date" name="date" value="${m ? m.date : todayStr()}"></label>
-    <div class="fld"><span>구분</span><div class="seg" data-seg="type" role="radiogroup" aria-label="구분">
-      <button type="button" data-v="in" role="radio" aria-checked="${type === 'in'}" class="${type === 'in' ? 'on' : ''}">반입</button>
-      <button type="button" data-v="out" role="radio" aria-checked="${type === 'out'}" class="${type === 'out' ? 'on' : ''}">반출</button></div></div>
+    <div class="fld"><span>구분</span><div class="seg" data-seg="type" role="group" aria-label="구분">
+      <button type="button" data-v="in" aria-pressed="${type === 'in'}" class="${type === 'in' ? 'on' : ''}">↓ 반입 <small>들어옴</small></button>
+      <button type="button" data-v="out" aria-pressed="${type === 'out'}" class="${type === 'out' ? 'on' : ''}">↑ 반출 <small>나감</small></button></div></div>
     <div class="fld full"><span id="pickLbl">품목</span>
       <div class="picker"><button type="button" class="picker-btn" aria-labelledby="pickLbl" aria-haspopup="listbox"></button>
         <div class="picker-pop" hidden><input class="inp picker-q" placeholder="품목명·초성 검색" aria-label="품목 검색" autocomplete="off"><div class="picker-list" role="listbox"></div></div></div>
       <small class="err" data-err="item"></small></div>
     <label class="fld"><span>수량</span><input class="inp num" name="qty" inputmode="decimal" autocomplete="off" value="${m ? plain(m.inputQty) : ''}" placeholder="0"><small class="err" data-err="qty"></small></label>
-    <div class="fld"><span>단위</span><div class="seg" data-seg="unit" role="radiogroup" aria-label="단위">
-      <button type="button" data-v="box" role="radio" class="${unit === 'box' ? 'on' : ''}">박스</button>
-      <button type="button" data-v="ea" role="radio" class="${unit === 'ea' ? 'on' : ''}">낱개</button></div></div>
+    <div class="fld"><span>단위</span><div class="seg" data-seg="unit" role="group" aria-label="단위">
+      <button type="button" data-v="box" class="${unit === 'box' ? 'on' : ''}">박스</button>
+      <button type="button" data-v="ea" class="${unit === 'ea' ? 'on' : ''}">낱개</button></div></div>
     <label class="fld wide full"><span>메모 (선택)</span><input class="inp" name="memo" value="${esc(m ? m.memo : '')}" placeholder="예: 행사용 반출"></label>
     <div class="conv wide full" data-conv hidden></div>
   </div>`;
@@ -41,8 +41,8 @@ function bindMovForm(root, m, onTypeChange) {
   }
   function openPop(v) { pop.hidden = !v; btn.setAttribute('aria-expanded', v); if (v) { q.value = ''; paintList(); q.focus(); } }
   function paintSeg() {
-    $$('[data-seg=type] button', root).forEach(b => { const on = b.dataset.v === st.type; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
-    $$('[data-seg=unit] button', root).forEach(b => { const on = b.dataset.v === st.unit; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+    $$('[data-seg=type] button', root).forEach(b => { const on = b.dataset.v === st.type; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    $$('[data-seg=unit] button', root).forEach(b => { const on = b.dataset.v === st.unit; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     const it = DB.items.get(st.itemId);
     const boxBtn = $('[data-seg=unit] [data-v=box]', root);
     boxBtn.disabled = !!it && !it.boxQty;

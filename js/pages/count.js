@@ -39,15 +39,15 @@ function countRowHTML(item, ym) {
       <div class="crow-name"><b>${nm}</b>${commonBadge(item)}<small>${boxInfo(item)}</small></div>
       <span class="state v-state"></span></div>
     <div class="crow-in">
-      <label>📦 박스<input data-f="box" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.box)}" ${dis} ${noBox ? 'disabled placeholder="없음"' : 'placeholder="0"'} aria-label="${nm} 박스 수량"></label>
-      <label>낱개<input data-f="ea" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.ea)}" placeholder="0" ${dis} aria-label="${nm} 낱개 수량"></label>
-      <label>${esc(salesLabel())}<input data-f="sales" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${c.salesSet || c.locked ? plain(c.sales) : ''}" placeholder="0" ${dis} aria-label="${nm} ${esc(SHOPS[S.shop].salesLong)}"></label>
+      <label><span class="lab">박스</span><input data-f="box" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.box)}" ${dis} ${noBox ? 'disabled placeholder="없음"' : 'placeholder=" "'} aria-label="${nm} 박스 수량"></label>
+      <label><span class="lab">낱개</span><input data-f="ea" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${plain(c.ea)}" placeholder=" " ${dis} aria-label="${nm} 낱개 수량"></label>
+      <label><span class="lab">${esc(salesLabel())}</span><input data-f="sales" data-nav inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${c.salesSet || c.locked ? plain(c.sales) : ''}" placeholder="0" ${dis} aria-label="${nm} ${esc(SHOPS[S.shop].salesLong)}"></label>
     </div>
     <div class="crow-side">
-      <div class="crow-res" aria-live="polite">
+      <div class="crow-res">
         <div><span class="k">있어야 할 수</span><span class="v v-cexp"></span></div>
         <div><span class="k">센 수</span><span class="v v-total"></span></div>
-        <div class="res-diff"><span class="k">차이</span><span class="v v-cdiff"></span></div>
+        <div class="res-diff"><span class="k">차이</span><span class="v v-cdiff" aria-live="polite"></span></div>
       </div>
       <div class="calc v-calc"></div>
     </div>
@@ -95,7 +95,7 @@ function refreshCountSummary() {
   const pt = $('#progTxt'); if (pt) pt.innerHTML = `${done}<small>/ ${total}개 셌어요</small>`;
   const pm = $('#progMsg'); if (pm) pm.textContent = PLANT_MSG[stage];
   const pl = $('#plant'); if (pl) pl.dataset.stage = stage;
-  const pb = $('#progBar'); if (pb) { pb.style.width = (pct * 100) + '%'; pb.parentElement.setAttribute('aria-valuenow', Math.round(pct * 100)); }
+  const pb = $('#progBar'); if (pb) { pb.style.width = (pct * 100) + '%'; pb.parentElement.setAttribute('aria-valuenow', Math.round(pct * 100)); pb.parentElement.setAttribute('aria-valuetext', `${total}개 중 ${done}개 셌어요`); }
 }
 
 function renderCountList() {
@@ -113,7 +113,7 @@ function renderCountList() {
     html += `<section class="grp"><button class="grp-head" data-act="toggle-grp" data-key="${esc(g.key)}" aria-expanded="${!!open}">${svg('chev', 'chev')}
       <span class="gname">${esc(g.name)}${g.common ? ' <span class="badge common">공용</span>' : ''}${g.kind ? ' <span class="badge muted">묶음</span>' : ''}</span>
       <span class="grp-cnt" data-gcnt="${esc(g.key)}"></span></button>
-      <div ${open ? '' : 'hidden'}>${its.map(i => countRowHTML(i, ym)).join('')}</div></section>`;
+      <div class="grp-body" ${open ? '' : 'hidden'}><div class="crow-cols" aria-hidden="true"><span>품목</span><span class="c3"><span>박스</span><span>낱개</span><span>${esc(salesLabel())}</span></span><span class="c3"><span>있어야 할 수</span><span>센 수</span><span>차이</span></span></div>${its.map(i => countRowHTML(i, ym)).join('')}</div></section>`;
   });
   if (!shown) html = q ? `<div class="empty"><span class="e-ico">🔍</span><strong>‘${esc(q)}’에 맞는 품목이 없어요</strong><p>초성(예: ㅇㄹㅂ)이나 이름 일부로도 찾을 수 있어요.</p><button class="btn" data-act="clear-count-q">검색 지우기</button></div>`
     : `<div class="empty"><span class="e-ico">🌸</span><strong>모든 품목을 셌어요</strong><p>이제 아래 [중간점검 저장]을 눌러 오늘 점검을 남겨 주세요.</p><button class="btn" data-act="show-all">전체 품목 보기</button></div>`;
@@ -134,8 +134,7 @@ function renderCount(main) {
     <div class="grow-card">
       <div class="plant" id="plant" data-stage="0" aria-hidden="true">${PLANT_SVG}</div>
       <div class="grow-txt">
-        <div class="grow-num num" id="progTxt"></div>
-        <p class="grow-msg" id="progMsg"></p>
+        <div class="grow-top"><div class="grow-num num" id="progTxt"></div><p class="grow-msg" id="progMsg"></p></div>
         <div class="bar" role="progressbar" aria-label="입력한 품목 비율" aria-valuemin="0" aria-valuemax="100"><i id="progBar"></i></div>
       </div>
     </div>

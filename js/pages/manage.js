@@ -31,10 +31,10 @@ function reorder(store, ids) { const recs = ids.map((id, i) => { const r = DB[st
 
 function renderManage(main) {
   const t = S.mgTab;
-  main.innerHTML = `<div class="tabs" role="tablist">
-      <button role="tab" class="${t === 'cat' ? 'on' : ''}" aria-selected="${t === 'cat'}" data-act="mg-tab" data-t="cat">카테고리</button>
-      <button role="tab" class="${t === 'item' ? 'on' : ''}" aria-selected="${t === 'item'}" data-act="mg-tab" data-t="item">품목</button>
-      <button role="tab" class="${t === 'group' ? 'on' : ''}" aria-selected="${t === 'group'}" data-act="mg-tab" data-t="group">조사 묶음</button></div>
+  main.innerHTML = `<div class="tabs" role="group" aria-label="관리할 것 고르기">
+      <button class="${t === 'cat' ? 'on' : ''}" aria-pressed="${t === 'cat'}" data-act="mg-tab" data-t="cat">카테고리</button>
+      <button class="${t === 'item' ? 'on' : ''}" aria-pressed="${t === 'item'}" data-act="mg-tab" data-t="item">품목</button>
+      <button class="${t === 'group' ? 'on' : ''}" aria-pressed="${t === 'group'}" data-act="mg-tab" data-t="group">조사 묶음</button></div>
     <div id="mgBody"></div>`;
   ({ cat: renderCatTab, item: renderItemTab, group: renderGroupTab })[t]($('#mgBody'));
 }
