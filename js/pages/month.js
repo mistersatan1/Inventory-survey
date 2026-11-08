@@ -58,31 +58,69 @@ function renderMonth(main) {
     </div>
     ${confirmed ? `<div class="banner lock no-print"><span class="b-ico">🔒</span><div><b>${mLabel(ym)}은 ${fmtDateTime(rec.confirmedAt)}에 마감했어요 (작성자 ${esc(rec.author || '–')}).</b>보기만 할 수 있어요. 이 달의 ‘센 수’가 ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 들어가 있어요.</div></div>` : ''}
     ${firstMonthBanner}
-    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">처음 있던&nbsp;수<small class="th-sub">전월 재고</small></th><th class="n">+&nbsp;반입</th><th class="n">−&nbsp;반출</th><th class="n">−&nbsp;${esc(label)}</th><th class="n">=&nbsp;있어야 할&nbsp;수<small class="th-sub">예상 재고</small></th><th class="n">센 수<small class="th-sub">실사 재고 · 박스 + 낱개</small></th><th class="n">차이<small class="th-sub">오차</small></th><th>차이 난 까닭</th></tr></thead>
+    ${items.length ? `${confirmed ? '' : '<section class="card no-print" id="monthSteps"></section>'}
+      <div class="sec-title no-print"><span>전체 표 <small class="muted">품목별로 자세히 보고 고치기</small></span></div>
+      <div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">처음 있던&nbsp;수<small class="th-sub">전월 재고</small></th><th class="n">+&nbsp;반입</th><th class="n">−&nbsp;반출</th><th class="n">−&nbsp;${esc(label)}</th><th class="n">=&nbsp;있어야 할&nbsp;수<small class="th-sub">예상 재고</small></th><th class="n">센 수<small class="th-sub">실사 재고 · 박스 + 낱개</small></th><th class="n">차이<small class="th-sub">오차</small></th><th>차이 난 까닭</th></tr></thead>
       <tbody>${body}</tbody></table></div>
       <p class="legend"><span class="minus-note">마이너스(−)는 부족을 의미</span>
       <span class="muted">있어야 할 수 = 처음 있던 수 + 반입 − 반출 − ${esc(label)}</span><span class="muted">차이 = 센 수 − 있어야 할 수</span></p>
-      <section class="card" id="monthSummary"></section>
-      <section class="card no-print">
-        <h2><span class="h2-ico">${svg('month')}</span>${mLabel(ym)} 마감하기</h2><div class="confirm-box"><label class="fld"><span>작성자</span><input class="inp" id="author" value="${esc(rec?.author || '')}" placeholder="이름" ${confirmed ? 'disabled' : ''} autocomplete="name"></label>
-        ${confirmed ? `<button class="btn danger" data-act="unconfirm">마감 풀기</button>` : `<button class="btn primary lg" data-act="confirm-month">이번 달 마감하기</button>`}</div>
-        <p class="small muted" style="margin:8px 0 0">${confirmed ? '잘못 마감했다면 [마감 풀기]로 다시 고칠 수 있어요.' : `마감하면 이 달은 잠기고, ‘센 수’가 ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 자동으로 들어가요.`}</p>
-      </section>`
+      ${confirmed ? `<section class="card no-print">
+        <h2><span class="h2-ico">${svg('month')}</span>${mLabel(ym)} 마감됨</h2>
+        <div class="confirm-box"><p class="small muted" style="margin:0;flex:1">잘못 마감했다면 [마감 풀기]로 다시 고칠 수 있어요.</p><button class="btn danger" data-act="unconfirm">마감 풀기</button></div>
+      </section>` : ''}`
     : `<div class="empty card"><span class="e-ico">🗓</span><strong>${ymLabel(ym)}에 정산할 품목이 없어요</strong><p>${confirmed ? '' : '품목을 등록하면 여기서 월말 정산을 할 수 있어요.'}</p>${confirmed ? '' : '<button class="btn primary" data-act="new-item">첫 품목 등록하기</button>'}</div>`}`;
   $$('#monthTbl tr[data-item]').forEach(refreshRow);
   refreshMonthSummary();
-  const a = $('#author'); if (a) a.addEventListener('input', () => { const r = monthRec(shop, ym) || { id: shop + '|' + ym, shop, ym, confirmed: false }; r.author = a.value; save('months', r); });
+  // 단계 안의 칸에서 나가면 목록을 다시 그린다 (입력 중에는 다시 그리지 않아 커서가 튀지 않음)
+  const steps = $('#monthSteps');
+  if (steps) steps.addEventListener('focusout', e => { if (!steps.contains(e.relatedTarget)) setTimeout(refreshMonthSummary, 0); });
+}
+/* ---------- 마감 순서 (① 다 셌나 → ② 차이 난 까닭 → ③ 마감) ----------
+ * 큰 표만 보고는 무엇부터 할지 몰라서, 해야 할 일을 차례로 보여 준다. */
+function monthStepState(ym) {
+  const cs = monthItems(S.shop, ym).map(i => ({ i, c: monthCalc(i, ym) }));
+  const unc = cs.filter(x => !x.c.counted && !x.c.locked);
+  const diffs = cs.filter(x => x.c.counted && x.c.diff !== 0);
+  const noReason = diffs.filter(x => !String(x.c.reason || '').trim());
+  return { total: cs.length, unc, diffs, noReason };
+}
+function stepHead(n, done, title, status) {
+  return `<div class="step-h"><span class="step-n ${done ? 'done' : ''}" data-step-n="${n}" aria-hidden="true">${done ? '✓' : n}</span>
+    <b class="step-t">${title}</b><span class="step-st ${done ? 'done' : ''}" data-step-st="${n}">${status}</span></div>`;
 }
 function refreshMonthSummary() {
-  const box = $('#monthSummary'); if (!box) return;
-  const ym = S.monthYm; const items = monthItems(S.shop, ym);
-  const cs = items.map(i => ({ i, c: monthCalc(i, ym) }));
-  const diffs = cs.filter(x => x.c.counted && x.c.diff !== 0);
-  const unc = cs.filter(x => !x.c.counted);
-  box.innerHTML = `<h2>차이 요약</h2>
-    <p style="margin:0 0 6px">차이 난 품목: <b class="${diffs.length ? 'minus' : 'match'}">${diffs.length}개</b>${unc.length ? ` · 아직 안 센 품목: <b>${unc.length}개</b>` : ''} <span class="muted">(전체 ${items.length}개)</span></p>
-    ${diffs.length ? `<ul class="diff-list num">${diffs.map(({ i, c }) => `<li><span><b>${esc(i.name)}</b>${c.reason ? `<br><small class="muted">${esc(c.reason)}</small>` : ''}</span>${diffHTML(c.diff)}</li>`).join('')}</ul>` : `<p class="small muted" style="margin:0">${unc.length === items.length ? '아직 센 품목이 없어요.' : '센 품목은 모두 있어야 할 수와 딱 맞아요.'}</p>`}
-    ${unc.length && unc.length < items.length ? `<p class="small muted" style="margin:6px 0 0">미입력: ${unc.map(x => esc(x.i.name)).join(', ')}</p>` : ''}`;
+  const box = $('#monthSteps'); if (!box) return;
+  const ym = S.monthYm; const st = monthStepState(ym); const rec = monthRec(S.shop, ym);
+  const d1 = !st.unc.length, d2 = !st.noReason.length;
+  const s1 = d1 ? '다 셌어요' : `아직 ${st.unc.length}개`;
+  const s2 = !st.diffs.length ? '차이 없음' : d2 ? '까닭 다 적음' : `${st.diffs.length - st.noReason.length} / ${st.diffs.length}개 적음`;
+  // 단계 안에서 글자를 넣는 중이면 상태 글자만 바꾼다
+  if (box.contains(document.activeElement) && $('.steps', box)) {
+    [[1, d1, s1], [2, d2, s2]].forEach(([n, done, txt]) => {
+      const t = $(`[data-step-st="${n}"]`, box); if (t) { t.textContent = txt; t.classList.toggle('done', done); }
+      const c = $(`[data-step-n="${n}"]`, box); if (c) { c.textContent = done ? '✓' : n; c.classList.toggle('done', done); }
+    });
+    return;
+  }
+  const isCur = ym === curYm();
+  const chips = st.unc.slice(0, 12).map(x => `<span class="name-chip">${esc(x.i.name)}</span>`).join('') + (st.unc.length > 12 ? `<span class="name-chip">외 ${st.unc.length - 12}개</span>` : '');
+  box.innerHTML = `<h2><span class="h2-ico">${svg('month')}</span>${mLabel(ym)} 마감 순서</h2>
+    <ol class="steps">
+      <li class="step ${d1 ? 'is-done' : ''}">${stepHead(1, d1, '모든 품목을 셌나요?', s1)}
+        ${d1 ? '' : `<div class="step-b"><div class="name-chips">${chips}</div>
+          ${isCur ? `<button class="btn sm" data-act="count-empty">재고 세기에서 마저 세기</button>` : `<p class="small muted" style="margin:0">아래 표의 ‘센 수’ 칸에 넣어 주세요.</p>`}
+          <p class="small muted" style="margin:6px 0 0">못 센 품목은 ‘있어야 할 수’를 센 수로 보고 마감돼요.</p></div>`}</li>
+      <li class="step ${d2 ? 'is-done' : ''}">${stepHead(2, d2, '차이 난 까닭을 적었나요?', s2)}
+        ${st.diffs.length ? `<div class="step-b"><p class="small muted" style="margin:0 0 8px">적지 않아도 마감할 수 있어요. 적어 두면 다음 달에 원인을 찾기 쉬워요.</p>
+          <ul class="reason-list">${st.diffs.map(({ i, c }) => `<li data-item="${i.id}" data-ym="${ym}"><span class="rl-name"><b>${esc(i.name)}</b>${diffHTML(c.diff)}</span>
+            <input class="inp" data-f="reason" value="${esc(c.reason)}" placeholder="예: 파손 2개, 행사에 씀" autocomplete="off" aria-label="${esc(i.name)} 차이 난 까닭"></li>`).join('')}</ul></div>` : ''}</li>
+      <li class="step">${stepHead(3, false, '이번 달 마감하기', '')}
+        <div class="step-b"><div class="confirm-box"><label class="fld"><span>작성자</span><input class="inp" id="author" value="${esc(rec?.author || '')}" placeholder="이름" autocomplete="name"></label>
+          <button class="btn primary lg" data-act="confirm-month">이번 달 마감하기</button></div>
+          <p class="small muted" style="margin:8px 0 0">마감하면 이 달은 잠기고, ‘센 수’가 ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 자동으로 들어가요. 잘못하면 [마감 풀기]로 되돌릴 수 있어요.</p></div></li>
+    </ol>`;
+  const a = $('#author', box);
+  a.addEventListener('input', () => { const r = monthRec(S.shop, ym) || { id: S.shop + '|' + ym, shop: S.shop, ym, confirmed: false }; r.author = a.value; save('months', r); });
 }
 async function confirmMonth() {
   const ym = S.monthYm, shop = S.shop; const items = monthItems(shop, ym);

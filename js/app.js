@@ -139,6 +139,7 @@ const actions = {
   'cp-history': () => showCheckpoints(),
   'paste-sales': () => pasteSales(),
   'start-stock': () => startStock(),
+  'count-empty': () => { S.onlyEmpty = true; go('count'); },
   'new-item': () => { if (!catsFor(S.shop).length) toast('카테고리가 없어 새로 만들어요. 아래에서 이름을 넣어 주세요.'); openItemEditor(null, { cat: S.invCat }); },
   'edit-item': el => openItemEditor(el.dataset.id),
   'new-cat': () => openCategoryEditor(),
@@ -193,6 +194,8 @@ document.addEventListener('input', e => {
     else if (f === 'prev') m.prevManual = v;
   }
   save('monthData', m);
+  // 같은 품목의 같은 칸이 화면에 두 곳 있으면(월말 단계 목록과 표) 값을 맞춘다
+  $$(`#main [data-item="${item.id}"] [data-f="${f}"]`).forEach(x => { if (x !== el) x.value = el.value; });
   if (S.page === 'count') { S.countDirty = true; refreshRow(row); refreshCountSummary(); }
   else { refreshRow(row); refreshMonthSummary(); }
 });
