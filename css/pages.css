@@ -201,6 +201,31 @@ button.stat:hover{border-color:var(--g-400)}
 @media (max-width:599px){ .step-b{margin-left:0} }
 @media (min-width:900px){ .reason-list li{grid-template-columns:minmax(200px,280px) 1fr;align-items:center} }
 
+/* 엑셀 붙여넣기 */
+.howto{margin:0 0 var(--s-3);padding-left:20px;line-height:1.7}
+.xl-map{margin-top:var(--s-3);padding:var(--s-3);border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line-2)}
+.xl-map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-2)}
+@media (min-width:640px){ .xl-map-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.xl-opts{display:grid;gap:var(--s-3);margin-top:var(--s-3)}
+.xl-opts .scope label{flex:1 1 220px;min-height:auto;padding:var(--s-2) var(--s-3);align-items:flex-start;flex-wrap:wrap}
+.xl-opts .scope input{margin-top:3px}
+.xl-prev{max-height:320px;overflow:auto}
+.xl-prev th{position:sticky;top:0;z-index:1}
+
+/* 주문할 것 목록 */
+.order-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.order-list li{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-2) var(--s-3);border-bottom:1px solid var(--line-2)}
+.order-list li:last-child{border-bottom:0}
+.order-list li:has(.ol-check input:not(:checked)){opacity:.6}
+.order-list .grow{flex:1;min-width:0}
+.order-list .grow small{display:block;color:var(--muted);font-size:var(--fs-xs)}
+.ol-check{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;cursor:pointer}
+.ol-check input{width:22px;height:22px;margin:0;accent-color:var(--brand)}
+.ol-qty{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+.ol-qty .inp{width:96px;text-align:right;font-weight:800}
+.ol-hint{font-size:var(--fs-xs);color:var(--brand-strong);font-weight:700;white-space:nowrap}
+@media (max-width:520px){ .order-list li{flex-wrap:wrap} .order-list .av{display:none} .ol-qty{margin-left:auto} }
+
 /* ---------- 관리 ---------- */
 .add-row{display:flex;gap:var(--s-2);flex-wrap:wrap;align-items:flex-end}
 .add-row .fld{flex:1;min-width:180px}

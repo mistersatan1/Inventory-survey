@@ -65,17 +65,31 @@ let saveListeners = [];
 const SaveState = { state: 'saved', at: null };
 function setSaveState(st) { SaveState.state = st; if (st === 'saved') SaveState.at = Date.now(); saveListeners.forEach(f => f()); }
 async function loadAll() { for (const s of storage.STORES) { const rows = await storage.getAll(s); DB[s] = new Map(rows.map(r => [r.id, r])); } }
+/* 고친 시각(updatedAt)을 남겨 두면 다른 기기 기록과 합칠 때 더 최신 쪽을 고를 수 있다 */
+function stamp(store, rec) {
+  if (store === 'meta' || store === 'tombstones') return;
+  rec.updatedAt = Date.now();
+  const t = DB.tombstones && DB.tombstones.get(store + '|' + rec.id);
+  if (t) { DB.tombstones.delete(t.id); storage.remove('tombstones', t.id).catch(() => {}); } // 되돌리기 등으로 다시 살아남
+}
 function save(store, rec) {
+  stamp(store, rec);
   DB[store].set(rec.id, rec);
   setSaveState('saving');
   return storage.put(store, rec).then(() => setSaveState('saved')).catch(e => { setSaveState('err'); toast('저장하지 못했어요: ' + e.message, { error: true }); });
 }
 function saveMany(store, recs) {
-  recs.forEach(r => DB[store].set(r.id, r));
+  recs.forEach(r => { stamp(store, r); DB[store].set(r.id, r); });
   setSaveState('saving');
   return storage.putMany(store, recs).then(() => setSaveState('saved')).catch(e => { setSaveState('err'); toast('저장하지 못했어요: ' + e.message, { error: true }); });
 }
-function del(store, id) { DB[store].delete(id); return storage.remove(store, id).catch(e => toast('삭제하지 못했어요: ' + e.message, { error: true })); }
+/** 지우면서 '지움 표시'를 남긴다 — 다른 기기 기록을 합칠 때 다시 살아나지 않게 */
+function del(store, id) {
+  DB[store].delete(id);
+  const t = { id: store + '|' + id, store, recId: id, at: Date.now() };
+  if (DB.tombstones) { DB.tombstones.set(t.id, t); storage.put('tombstones', t).catch(() => {}); }
+  return storage.remove(store, id).catch(e => toast('삭제하지 못했어요: ' + e.message, { error: true }));
+}
 const meta = { get(k, d) { const r = DB.meta.get(k); return r ? r.value : d; }, set(k, v) { return save('meta', { id: k, value: v }); } };
 
 /* ---------- 도메인 헬퍼 ---------- */
