@@ -75,7 +75,7 @@ function bindMovForm(root, m, onTypeChange) {
       if (!v || v <= 0) { $('[data-err=qty]', root).textContent = '0보다 큰 수량을 넣어 주세요.'; qty.classList.add('bad'); ok = false; }
       if (!date) { toast('날짜를 골라 주세요.', { error: true }); ok = false; }
       if (!ok) return null;
-      if (isLocked(it, date.slice(0, 7))) { toast(`${mLabel(date.slice(0, 7))}은 월말 확정된 달이라 기록할 수 없어요. 월말 정산에서 확정을 해제한 뒤 기록하세요.`, { error: true }); return null; }
+      if (isLocked(it, date.slice(0, 7))) { toast(`${mLabel(date.slice(0, 7))}은 마감된 달이라 기록할 수 없어요. 월말 정산에서 [마감 풀기]를 한 뒤 기록하세요.`, { error: true }); return null; }
       const ea = st.unit === 'box' ? Calc.round(v * it.boxQty) : v;
       return { date, type: st.type, itemId: it.id, qty: ea, inputQty: v, inputUnit: st.unit, memo: $('[name=memo]', root).value.trim() };
     },
@@ -103,7 +103,7 @@ function renderMov(main) {
       <h2 id="movFormTitle"><span class="h2-ico">${svg('mov')}</span>들어오고 나간 물건 적기</h2>
       <div id="movForm">${movFormHTML(null)}</div>
       <div class="btn-row" style="margin-top:12px"><button class="btn primary lg block" data-act="mov-save" id="movSaveBtn">반입 저장</button></div>
-      <p class="small muted" style="margin:8px 0 0">저장하면 전체 재고·재고조사·월말 정산의 ‘예상 재고’에 바로 반영돼요.</p>
+      <p class="small muted" style="margin:8px 0 0">저장하면 전체 재고와 ‘있어야 할 수’에 바로 반영돼요.</p>
     </section>
     <section class="card">
       <div class="page-head" style="margin-bottom:10px"><h2 style="margin:0">반출입 내역</h2>
@@ -151,7 +151,7 @@ function saveMovement() {
 }
 function editMovement(id) {
   const m = DB.movements.get(id); const it = DB.items.get(m.itemId);
-  if (it && isLocked(it, m.date.slice(0, 7))) { toast('확정된 달의 기록은 고칠 수 없어요. 월말 정산에서 확정을 해제하세요.', { error: true }); return; }
+  if (it && isLocked(it, m.date.slice(0, 7))) { toast('마감된 달의 기록은 고칠 수 없어요. 월말 정산에서 [마감 풀기]를 눌러 주세요.', { error: true }); return; }
   let api;
   openModal({ title: '반출입 수정', body: movFormHTML(m), wide: true,
     actions: [{ label: '취소', value: null }, { label: '수정 내용 저장', cls: 'primary', onClick: () => {
@@ -162,7 +162,7 @@ function editMovement(id) {
 }
 function deleteMovement(id) {
   const m = DB.movements.get(id); const it = DB.items.get(m.itemId);
-  if (it && isLocked(it, m.date.slice(0, 7))) { toast('확정된 달의 기록은 지울 수 없어요. 월말 정산에서 확정을 해제하세요.', { error: true }); return; }
+  if (it && isLocked(it, m.date.slice(0, 7))) { toast('마감된 달의 기록은 지울 수 없어요. 월말 정산에서 [마감 풀기]를 눌러 주세요.', { error: true }); return; }
   del('movements', id); renderMov($('#main'));
   toast(`${it?.name || ''} ${dShort(m.date)} ${m.type === 'in' ? '반입' : '반출'} 기록을 지웠어요`, { undo: () => { save('movements', m); if (S.page === 'mov') renderMov($('#main')); toast('되돌렸어요'); } });
 }

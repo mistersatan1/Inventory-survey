@@ -30,7 +30,6 @@ img{max-width:100%}
 .shop-opt .dot{display:inline-flex;align-items:center;justify-content:center;flex:none;width:38px;height:38px;border-radius:50%;color:#fff;font-size:18px}
 .shop-opt[aria-current="true"]{background:var(--g-100)}
 .shop-opt small{display:block;font-weight:500;color:var(--muted);font-size:var(--fs-xs)}
-.top-title .t-long,.nav .t-long{display:none}
 .top-title{flex:1;min-width:0;font-weight:700;font-size:var(--fs-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.92}
 .top-date{font-size:var(--fs-sm);font-weight:700;white-space:nowrap;padding:4px 10px;border-radius:var(--r-pill);background:rgba(0,0,0,.14)}
 
@@ -62,5 +61,4 @@ main{display:block;width:100%;min-width:0;padding:var(--s-4) var(--s-4) calc(var
   .nav a[aria-current="page"] .nav-ico{background:var(--brand);color:#fff}
   main{padding:var(--s-6) var(--s-8) 64px}
   .top-title{font-size:var(--fs-lg)}
-  .top-title .t-long,.nav .t-long{display:inline} .top-title .t-short,.nav .t-short{display:none}
 }
