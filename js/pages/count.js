@@ -73,11 +73,11 @@ function refreshRow(row) {
     st.className = 'state v-state ' + (c.counted ? 'on' : 'off'); st.textContent = c.counted ? '✓ 셌어요' + other : '아직';
   }
   row.classList.toggle('counted', c.counted);
-  set('.v-calc', `전월 ${fmt(c.prev)} + 반입 ${fmt(c.inQ)} − 반출 ${fmt(c.outQ)} − ${esc(salesLabel())} ${fmt(c.sales)}`);
+  set('.v-calc', `처음 ${fmt(c.prev)} + 반입 ${fmt(c.inQ)} − 반출 ${fmt(c.outQ)} − ${esc(salesLabel())} ${fmt(c.sales)}`);
   const rw = $('.v-reason', row); if (rw) rw.hidden = !((c.counted && c.diff !== 0) || c.reason);
   // 월말 정산 표의 칸들
   set('.v-prevval', fmt(c.prev)); set('.v-in', fmt(c.inQ)); set('.v-out', fmt(c.outQ)); set('.v-sales', fmt(c.sales));
-  set('.v-exp', fmt(c.expected)); set('.v-diff', diffHTML(c.diff)); set('.v-act', c.counted ? fmt(c.actual) : '<span class="muted">미입력</span>');
+  set('.v-exp', fmt(c.expected)); set('.v-diff', diffHTML(c.diff)); set('.v-act', c.counted ? fmt(c.actual) : '<span class="muted">아직</span>');
   set('.v-actp', c.counted ? fmt(c.actual) : '');
   set('.v-reasonp', esc(c.reason));
 }
@@ -116,7 +116,7 @@ function renderCountList() {
       <div class="grp-body" ${open ? '' : 'hidden'}><div class="crow-cols" aria-hidden="true"><span>품목</span><span class="c3"><span>박스</span><span>낱개</span><span>${esc(salesLabel())}</span></span><span class="c3"><span>있어야 할 수</span><span>센 수</span><span>차이</span></span></div>${its.map(i => countRowHTML(i, ym)).join('')}</div></section>`;
   });
   if (!shown) html = q ? `<div class="empty"><span class="e-ico">🔍</span><strong>‘${esc(q)}’에 맞는 품목이 없어요</strong><p>초성(예: ㅇㄹㅂ)이나 이름 일부로도 찾을 수 있어요.</p><button class="btn" data-act="clear-count-q">검색 지우기</button></div>`
-    : `<div class="empty"><span class="e-ico">🌸</span><strong>모든 품목을 셌어요</strong><p>이제 아래 [중간점검 저장]을 눌러 오늘 점검을 남겨 주세요.</p><button class="btn" data-act="show-all">전체 품목 보기</button></div>`;
+    : `<div class="empty"><span class="e-ico">🌸</span><strong>모든 품목을 셌어요</strong><p>이제 아래 [오늘 기록 남기기]를 눌러 오늘 센 결과를 남겨 주세요.</p><button class="btn" data-act="show-all">전체 품목 보기</button></div>`;
   box.innerHTML = html;
   $$('.crow', box).forEach(refreshRow);
   refreshCountSummary();
@@ -126,6 +126,8 @@ function renderCount(main) {
   const items = itemsFor(S.shop);
   const locked = isConfirmed(S.shop, ym);
   const cps = [...DB.checkpoints.values()].filter(c => c.shop === S.shop);
+  const start = startStockItems(ym);
+  const startMissing = start.filter(i => md(ym, i.id)?.prevManual == null).length;
   if (!items.length) {
     main.innerHTML = `<div class="empty card"><span class="e-ico">🌱</span><strong>아직 ${SHOPS[S.shop].name} 품목이 없어요</strong><p>품목을 등록하면 여기서 바로 재고를 셀 수 있어요.</p><button class="btn primary" data-act="new-item">첫 품목 등록하기</button></div>`;
     return;
@@ -139,13 +141,15 @@ function renderCount(main) {
       </div>
     </div>
     <div class="period-line">
-      <div class="when num">${mLabel(ym)} 1일 ~ ${dKo(t)} 점검<small>숫자를 넣으면 바로 저장돼요. 다 세면 아래 [중간점검 저장]을 눌러요.</small></div>
-      <button class="btn sm" data-act="cp-history">${svg('history')}지난 점검 (${cps.length})</button>
+      <div class="when num">${mLabel(ym)} 1일 ~ ${dKo(t)} 점검<small>숫자는 넣는 즉시 저장돼요. 다 세면 [오늘 기록 남기기]로 오늘 결과를 날짜별로 남겨요.</small></div>
+      <button class="btn sm" data-act="cp-history">${svg('history')}지난 기록 (${cps.length})</button>
     </div>
-    ${locked ? `<div class="banner lock"><span class="b-ico">🔒</span><div><b>${mLabel(ym)}은 월말 확정되어 고칠 수 없어요.</b>고치려면 월말 정산에서 확정을 풀어 주세요.<br><button class="btn sm" data-act="nav" data-page="month">월말 정산 열기</button></div></div>` : ''}
+    ${locked ? `<div class="banner lock"><span class="b-ico">🔒</span><div><b>${mLabel(ym)}은 마감되어 고칠 수 없어요.</b>고치려면 월말 정산에서 [마감 풀기]를 눌러 주세요.<br><button class="btn sm" data-act="nav" data-page="month">월말 정산 열기</button></div></div>` : ''}
+    ${startMissing ? `<div class="banner start"><span class="b-ico">🌱</span><div><b>먼저 품목마다 ‘처음 있던 수’를 넣어 주세요.</b>지난달 말에 창고에 있던 수예요. 이걸 넣어야 ‘있어야 할 수’가 맞게 나와요. (아직 ${startMissing}개)<br><button class="btn primary sm" data-act="start-stock">처음 있던 수 넣기</button></div></div>` : ''}
     <div class="tools">
       <div class="search">${svg('search')}<input class="inp" id="countQ" type="search" value="${esc(S.countQ)}" placeholder="품목 찾기 (예: 유리병, ㅇㄹㅂ)" aria-label="품목 찾기" autocomplete="off"></div>
       <div class="tools-row">
+        ${start.length && !startMissing ? `<button class="btn sm" data-act="start-stock">처음 있던 수 고치기</button>` : ''}
         <label class="toggle"><input type="checkbox" id="onlyEmpty" ${S.onlyEmpty ? 'checked' : ''}> 아직 안 센 것만</label>
         <button class="btn sm" data-act="paste-sales" ${locked ? 'disabled' : ''}>${svg('file')}${esc(salesLabel())} 수량 붙여넣기</button>
       </div>
@@ -153,7 +157,7 @@ function renderCount(main) {
     <div id="countList"></div>
     <div class="bottom-bar no-print">
       <div class="save-state" id="saveState" role="status"></div>
-      <button class="btn primary" data-act="save-cp" ${locked ? 'disabled' : ''}>중간점검 저장</button>
+      <button class="btn primary" data-act="save-cp" ${locked ? 'disabled' : ''}>오늘 기록 남기기</button>
     </div>`;
   renderCountList();
   renderSaveState();
@@ -176,8 +180,8 @@ function saveCheckpoint() {
   save('checkpoints', rec);
   S.countDirty = false;
   const done = rows.filter(r => r.counted).length;
-  toast(`${dKo(rec.date)} 중간점검을 저장했어요 (입력 ${done}/${rows.length})`);
-  if (S.page === 'count') { const b = $('[data-act="cp-history"]'); if (b) b.textContent = `이전 점검 기록 (${[...DB.checkpoints.values()].filter(c => c.shop === S.shop).length})`; }
+  toast(`${dKo(rec.date)} 기록을 남겼어요 (센 품목 ${done}/${rows.length})`);
+  if (S.page === 'count') { const b = $('[data-act="cp-history"]'); if (b) b.innerHTML = `${svg('history')}지난 기록 (${[...DB.checkpoints.values()].filter(c => c.shop === S.shop).length})`; }
 }
 function showCheckpoints() {
   const list = [...DB.checkpoints.values()].filter(c => c.shop === S.shop).sort((a, b) => b.savedAt - a.savedAt);
@@ -185,16 +189,16 @@ function showCheckpoints() {
     const done = c.rows.filter(r => r.counted).length; const diffs = c.rows.filter(r => r.counted && r.diff !== 0).length;
     return `<li class="li"><div class="grow"><b class="num">${fmtDateTime(c.savedAt)}</b><small>입력 ${done}/${c.rows.length} · 차이 있는 품목 ${diffs}개</small></div>
       <button class="btn sm" data-cp="${c.id}">열어보기</button></li>`; }).join('')}</ul>`
-    : `<div class="empty"><span class="e-ico">🗓</span><strong>아직 저장한 중간점검이 없어요</strong><p>재고조사 화면 아래 [중간점검 저장]을 누르면 날짜별로 남아요.</p></div>`;
-  openModal({ title: `${SHOPS[S.shop].name} 이전 점검 기록`, body, actions: [{ label: '닫기', cls: 'primary' }], onMount: ({ el, close }) => {
+    : `<div class="empty"><span class="e-ico">🗓</span><strong>아직 남긴 기록이 없어요</strong><p>재고 세기 화면 아래 [오늘 기록 남기기]를 누르면 날짜별로 남아요.</p></div>`;
+  openModal({ title: `${SHOPS[S.shop].name} 지난 기록`, body, actions: [{ label: '닫기', cls: 'primary' }], onMount: ({ el, close }) => {
     $$('[data-cp]', el).forEach(b => b.addEventListener('click', () => { close(); showCheckpoint(DB.checkpoints.get(b.dataset.cp)); }));
   } });
 }
 function showCheckpoint(c) {
-  openModal({ title: `중간점검 ${fmtDateTime(c.savedAt)}`, wide: true,
-    body: `<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>품목</th><th class="n">실사</th><th class="n">예상</th><th class="n">차이</th><th class="n">${esc(salesLabel())}</th><th>사유</th></tr></thead><tbody>
-      ${c.rows.map(r => `<tr><td class="first"><b>${esc(DB.items.get(r.itemId)?.name || r.name)}</b></td><td class="n" data-label="실사">${r.counted ? fmt(r.actual) : '<span class="muted">미입력</span>'}</td>
-      <td class="n" data-label="예상">${fmt(r.expected)}</td><td class="n" data-label="차이">${r.counted ? diffHTML(r.diff) : '–'}</td><td class="n" data-label="${esc(salesLabel())}">${fmt(r.sales)}</td><td data-label="사유">${esc(r.reason || '')}</td></tr>`).join('')}
+  openModal({ title: `${fmtDateTime(c.savedAt)} 기록`, wide: true,
+    body: `<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>품목</th><th class="n">센 수</th><th class="n">있어야 할 수</th><th class="n">차이</th><th class="n">${esc(salesLabel())}</th><th>까닭</th></tr></thead><tbody>
+      ${c.rows.map(r => `<tr><td class="first"><b>${esc(DB.items.get(r.itemId)?.name || r.name)}</b></td><td class="n" data-label="센 수">${r.counted ? fmt(r.actual) : '<span class="muted">안 셈</span>'}</td>
+      <td class="n" data-label="있어야 할 수">${fmt(r.expected)}</td><td class="n" data-label="차이">${r.counted ? diffHTML(r.diff) : '–'}</td><td class="n" data-label="${esc(salesLabel())}">${fmt(r.sales)}</td><td data-label="까닭">${esc(r.reason || '')}</td></tr>`).join('')}
     </tbody></table></div>`, actions: [{ label: '목록으로', value: 'back' }, { label: '닫기', cls: 'primary' }] })
     .then(v => { if (v === 'back') showCheckpoints(); });
 }
@@ -215,6 +219,47 @@ function parsePaste(text, items) {
   });
   return { matched, unmatched };
 }
+/* ---------- 처음 있던 수(전월 재고) 넣기 ----------
+ * 지난달을 앱에서 마감하지 않은 품목은 ‘처음 있던 수’를 직접 넣어야 한다.
+ * 예전에는 월말 정산 표에서만 넣을 수 있어 처음 쓰는 사람이 찾지 못했다. */
+function startStockItems(ym) {
+  return itemsFor(S.shop).filter(i => { const c = monthCalc(i, ym); return !c.locked && !c.prevAuto; });
+}
+function startStock() {
+  const ym = curYm(); const items = startStockItems(ym);
+  if (!items.length) { toast('지난달 마감 결과가 이미 들어가 있어서 넣을 품목이 없어요.'); return; }
+  const rows = items.map(i => `<label class="ss-row" data-id="${i.id}">${avatar(i, 'sm')}<span class="grow"><b>${esc(i.name)}</b><small>${esc(catOf(i)?.name || '')} · 단위 ${esc(i.unit || 'ea')}</small></span>
+    <input class="inp num" inputmode="decimal" autocomplete="off" value="${plain(md(ym, i.id)?.prevManual)}" placeholder="0" aria-label="${esc(i.name)} 처음 있던 수"></label>`).join('');
+  openModal({ title: '처음 있던 수 넣기', wide: true,
+    body: `<p class="small" style="margin-top:0">지난달 마지막 날(${mLabel(addMonth(ym, -1))} 말)에 창고에 있던 수를 넣어 주세요. 낱개로 센 전체 수예요. 비워 둔 칸은 0으로 저장돼요.</p>
+      <details class="ss-paste"><summary>엑셀에서 한 번에 붙여넣기</summary>
+        <p class="small muted">엑셀에서 <b>품목명</b>과 <b>수량</b> 두 열을 복사해 붙여넣으면 아래 칸이 채워져요.</p>
+        <textarea class="inp" id="ssPaste" placeholder="엽서 세트&#9;120&#10;볼펜&#9;45"></textarea><p class="small" id="ssPasteMsg" style="margin:6px 0 0"></p></details>
+      <div class="ss-list">${rows}</div>`,
+    actions: [{ label: '취소' }, { label: '처음 있던 수 저장', cls: 'primary', onClick: ({ el }) => {
+      const recs = []; let bad = null;
+      $$('.ss-row', el).forEach(r => {
+        const inp = $('input', r); const v0 = parseNum(inp.value, true); const v = v0 === null ? 0 : v0; // 비우면 0
+        inp.classList.toggle('bad', v === undefined); if (v === undefined) { bad = bad || inp; return; }
+        const m = md(ym, r.dataset.id);
+        if ((m?.prevManual ?? null) === v) return;
+        const mm = ensureMd(ym, r.dataset.id); mm.prevManual = v; recs.push(mm);
+      });
+      if (bad) { toast('숫자만 넣어 주세요. 빨간 칸을 확인해 주세요.', { error: true }); bad.focus(); return false; }
+      if (recs.length) saveMany('monthData', recs);
+      toast(recs.length ? `${recs.length}개 품목의 처음 있던 수를 저장했어요` : '바뀐 내용이 없어요');
+      render();
+    } }],
+    onMount: ({ el }) => {
+      const ta = $('#ssPaste', el);
+      ta.addEventListener('input', () => {
+        const { matched, unmatched } = parsePaste(ta.value, items);
+        matched.forEach(({ item, qty }) => { const inp = $(`.ss-row[data-id="${item.id}"] input`, el); if (inp) { inp.value = plain(qty); inp.classList.remove('bad'); } });
+        $('#ssPasteMsg', el).innerHTML = !ta.value.trim() ? '' : `<b class="match">${matched.length}개 채웠어요</b>${unmatched.length ? ` · <b class="minus">이름이 안 맞는 줄 ${unmatched.length}개</b> <span class="muted">(${unmatched.slice(0, 3).map(u => esc(u.line)).join(', ')}${unmatched.length > 3 ? ' …' : ''})</span>` : ''}`;
+      });
+    } });
+}
+
 function pasteSales() {
   const label = salesLabel(); const ym = curYm();
   const items = itemsFor(S.shop).filter(i => !isLocked(i, ym));

@@ -5,12 +5,13 @@
  * 6. 셸: 매장 전환, 메뉴, 알림 띠
  * ===================================================================== */
 const PAGES = [
-  { id: 'count', label: '재고조사', short: '세기', title: '재고조사 · 중간점검' },
-  { id: 'mov', label: '반출입', short: '반출입', title: '반출입 기록' },
-  { id: 'inv', label: '전체 재고', short: '재고', title: '전체 재고' },
-  { id: 'month', label: '월말 정산', short: '월말', title: '월말 정산' },
-  { id: 'manage', label: '품목 관리', short: '품목', title: '품목·카테고리 관리' },
-  { id: 'settings', label: '설정·백업', short: '백업', title: '설정·백업' },
+  // 메뉴·윗줄·창 제목에 같은 이름을 쓴다 (화면마다 이름이 다르면 헷갈림)
+  { id: 'count', label: '재고 세기' },
+  { id: 'mov', label: '반출입' },
+  { id: 'inv', label: '전체 재고' },
+  { id: 'month', label: '월말 정산' },
+  { id: 'manage', label: '품목 관리' },
+  { id: 'settings', label: '백업' },
 ];
 function renderShell() {
   document.body.dataset.shop = S.shop;
@@ -22,11 +23,11 @@ function renderShell() {
         <span class="dot" style="background:${v.color}" aria-hidden="true">${v.icon}</span><span>${v.name}<small>${k === S.shop ? '지금 보는 매장' : '이 매장으로 바꾸기'}</small></span></button>`).join('')}
     </div>`;
   const p = PAGES.find(x => x.id === S.page);
-  $('#topTitle').innerHTML = `<span class="t-short">${p.label}</span><span class="t-long">${p.title}</span>`;
+  $('#topTitle').textContent = p.label;
   document.title = `${p.label} · ${sh.name} 재고`;
   const t = todayStr();
   $('#topDate').textContent = `${dShort(t)} (${'일월화수목금토'[new Date().getDay()]})`;
-  $('#nav').innerHTML = PAGES.map(pg => `<a href="#${pg.id}" data-act="nav" data-page="${pg.id}" ${pg.id === S.page ? 'aria-current="page"' : ''}><span class="nav-ico">${svg(pg.id)}</span><span class="nav-label"><span class="t-short">${pg.short}</span><span class="t-long">${pg.label}</span></span></a>`).join('');
+  $('#nav').innerHTML = PAGES.map(pg => `<a href="#${pg.id}" data-act="nav" data-page="${pg.id}" ${pg.id === S.page ? 'aria-current="page"' : ''}><span class="nav-ico">${svg(pg.id)}</span><span class="nav-label">${pg.label}</span></a>`).join('');
   document.body.classList.toggle('has-bottom-bar', S.page === 'count');
   renderNotice();
 }
@@ -52,9 +53,9 @@ function toggleShopMenu(force) {
 let movFormApi = null;
 async function canLeave() {
   if (S.page === 'count' && S.countDirty) {
-    const v = await openModal({ title: '중간점검을 아직 저장하지 않았어요',
-      body: `<p style="margin:0">입력한 숫자는 임시 저장되어 있어서 사라지지 않아요.<br>다만 오늘 점검 기록(날짜별 기록)은 아직 남지 않았어요.</p>`,
-      actions: [{ label: '여기 머무르기', value: 'stay' }, { label: '그냥 이동', value: 'go' }, { label: '중간점검 저장하고 이동', value: 'save', cls: 'primary' }] });
+    const v = await openModal({ title: '오늘 기록을 남길까요?',
+      body: `<p style="margin:0">센 숫자는 <b>이미 저장되어 있어요.</b> 그냥 나가도 사라지지 않아요.<br>[기록 남기고 이동]을 누르면 오늘 날짜로 결과가 한 장 더 남아서, 나중에 [지난 기록]에서 다시 볼 수 있어요.</p>`,
+      actions: [{ label: '계속 세기', value: 'stay' }, { label: '남기지 않고 이동', value: 'go' }, { label: '기록 남기고 이동', value: 'save', cls: 'primary' }] });
     if (v === 'save') { saveCheckpoint(); return true; }
     if (v === 'go') { S.countDirty = false; return true; }
     return false;
@@ -137,6 +138,7 @@ const actions = {
   'save-cp': () => saveCheckpoint(),
   'cp-history': () => showCheckpoints(),
   'paste-sales': () => pasteSales(),
+  'start-stock': () => startStock(),
   'new-item': () => { if (!catsFor(S.shop).length) toast('카테고리가 없어 새로 만들어요. 아래에서 이름을 넣어 주세요.'); openItemEditor(null, { cat: S.invCat }); },
   'edit-item': el => openItemEditor(el.dataset.id),
   'new-cat': () => openCategoryEditor(),

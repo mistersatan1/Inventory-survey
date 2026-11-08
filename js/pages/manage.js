@@ -108,12 +108,12 @@ function renderItemTab(box) {
   const cats = catsFor(S.shop);
   box.innerHTML = `<div class="page-head"><div class="btn-row"><button class="btn primary" data-act="new-item">${svg('plus')}품목 추가</button></div>
     <button class="btn sm" data-act="toggle-archive">${S.showArchived ? '← 사용 중인 품목 보기' : `보관함 (${arch.length})`}</button></div>
-    ${S.showArchived ? '<div class="banner info"><span class="b-ico">📦</span><div><b>보관함</b>보관한 품목은 재고조사·목록에서 숨겨지지만 지난 기록은 그대로 남아요.</div></div>' : ''}
+    ${S.showArchived ? '<div class="banner info"><span class="b-ico">📦</span><div><b>보관함</b>보관한 품목은 재고 세기·목록에서 숨겨지지만 지난 기록은 그대로 남아요.</div></div>' : ''}
     ${show.length ? cats.map(c => { const its = show.filter(i => i.categoryId === c.id); if (!its.length) return ''; return `<div class="sec-title"><span>${esc(c.name)} ${c.shop === 'common' ? '<span class="badge common">공용</span>' : ''}</span><span>${its.length}개</span></div>
       <ul class="list card">${its.map(i => `<li class="li">${avatar(i, '', true)}<div class="grow"><b>${esc(i.name)}</b>${commonBadge(i)}<small>${boxInfo(i)} · 단위 ${esc(i.unit || 'ea')}${i.lowStock != null && i.lowStock !== '' ? ` · 부족 기준 ${fmt(i.lowStock)}` : ''}${i.memo ? ' · ' + esc(i.memo) : ''}</small></div>
         ${S.showArchived ? `<button class="btn sm" data-act="unarchive" data-id="${i.id}">다시 꺼내기</button>` : `<button class="icon-btn" data-act="edit-item" data-id="${i.id}" aria-label="${esc(i.name)} 수정">${svg('edit')}수정</button>`}</li>`).join('')}</ul>`; }).join('')
     : S.showArchived ? `<div class="empty card"><strong>보관한 품목이 없어요</strong></div>`
-    : `<div class="empty card"><span class="e-ico">🌱</span><strong>아직 품목이 없어요</strong><p>사진과 1박스 기준 수량을 넣어 두면 재고조사가 빨라져요.</p><button class="btn primary" data-act="new-item">첫 품목 등록하기</button></div>`}`;
+    : `<div class="empty card"><span class="e-ico">🌱</span><strong>아직 품목이 없어요</strong><p>사진과 1박스 기준 수량을 넣어 두면 재고 세기가 빨라져요.</p><button class="btn primary" data-act="new-item">첫 품목 등록하기</button></div>`}`;
 }
 function compressImage(file, max = 400, q = 0.7) {
   return new Promise((res, rej) => {
@@ -155,7 +155,7 @@ function openItemEditor(id, opts = {}) {
     </div>`;
   const actions = [{ label: '취소' }];
   if (it && !it.archived) actions.unshift({ label: '품목 보관', cls: 'danger', onClick: async () => {
-    const ok = await confirmDialog({ title: '품목 보관', message: `‘<b>${esc(it.name)}</b>’을(를) 보관할까요?<br><span class="small muted">재고조사와 목록에서 숨겨지고, 지난 달 기록은 그대로 남아요. 품목 관리 &gt; 보관함에서 다시 꺼낼 수 있어요.</span>`, ok: `‘${it.name}’ 보관`, danger: true });
+    const ok = await confirmDialog({ title: '품목 보관', message: `‘<b>${esc(it.name)}</b>’을(를) 보관할까요?<br><span class="small muted">재고 세기와 목록에서 숨겨지고, 지난 달 기록은 그대로 남아요. 품목 관리 &gt; 보관함에서 다시 꺼낼 수 있어요.</span>`, ok: `‘${it.name}’ 보관`, danger: true });
     if (!ok) return false;
     it.archived = true; it.archivedAt = Date.now(); save('items', it); toast(`‘${it.name}’을(를) 보관했어요`, { undo: () => { it.archived = false; save('items', it); render(); } }); render();
   } });
@@ -192,7 +192,7 @@ function openItemEditor(id, opts = {}) {
 
 function renderGroupTab(box) {
   const groups = [...DB.groups.values()].filter(g => g.shop === S.shop).sort(byOrder);
-  box.innerHTML = `<section class="card"><h2>조사 묶음이란?</h2><p class="small muted" style="margin:0">이름이 비슷하거나 함께 세면 편한 품목을 묶어요 (예: 유리병 소/중/대). 재고조사 화면은 묶음 단위로 접고 펼쳐요.
+  box.innerHTML = `<section class="card"><h2>조사 묶음이란?</h2><p class="small muted" style="margin:0">이름이 비슷하거나 함께 세면 편한 품목을 묶어요 (예: 유리병 소/중/대). 재고 세기 화면은 묶음 단위로 접고 펼쳐요.
       묶음에 넣지 않은 품목은 카테고리별로 자동으로 묶여요.</p>
       <div class="add-row" style="margin-top:12px"><label class="fld"><span>새 묶음 이름</span><input class="inp" id="newGrp" placeholder="예: 유리병 소/중/대" autocomplete="off"></label><button class="btn primary" data-act="add-group">묶음 만들기</button></div></section>
     <section class="card"><h2>${SHOPS[S.shop].name} 조사 묶음 <small class="muted">(끌어서 순서 변경)</small></h2>

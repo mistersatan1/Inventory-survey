@@ -10,7 +10,7 @@ function renderSettings(main) {
   main.innerHTML = `
     <section class="card"><h2><span class="h2-ico">${svg('settings')}</span>백업</h2>
       <dl class="kv"><dt>마지막 백업</dt><dd class="num">${last ? `${fmtDateTime(last)} (${daysAgo(last) === 0 ? '오늘' : daysAgo(last) + '일 전'})` : '<span class="minus">아직 없음</span>'}</dd>
-        <dt>저장된 데이터</dt><dd class="num">품목 ${n('items')}개 · 카테고리 ${n('categories')}개 · 반출입 ${n('movements')}건 · 중간점검 ${n('checkpoints')}건</dd>
+        <dt>저장된 데이터</dt><dd class="num">품목 ${n('items')}개 · 카테고리 ${n('categories')}개 · 반출입 ${n('movements')}건 · 남긴 기록 ${n('checkpoints')}건</dd>
         <dt>저장 위치</dt><dd>이 기기의 브라우저 (${storage.mode === 'idb' ? 'IndexedDB' : 'localStorage'}) · 인터넷 없이도 저장돼요</dd></dl>
       <div class="btn-row" style="margin-top:14px"><button class="btn primary" data-act="backup">전체 데이터 백업(JSON) 다운로드</button>
         <label class="btn" style="position:relative">백업 불러오기<input type="file" accept="application/json,.json" id="restoreFile" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%" aria-label="백업 파일 고르기"></label></div>

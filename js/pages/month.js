@@ -30,42 +30,43 @@ function renderMonth(main) {
       const ro = c.locked;
       body += `<tr data-item="${i.id}" data-ym="${ym}">
         <td class="first"><div class="name-cell">${avatar(i, 'sm', true)}<div><b>${esc(i.name)}</b>${commonBadge(i)}${i.archived ? ' <span class="badge muted">보관됨</span>' : ''}<small>${boxInfo(i)}</small></div></div></td>
-        <td class="n" data-label="전월 재고">${!ro && !c.prevAuto ? `<input class="mini-in" data-f="prev" inputmode="decimal" value="${plain(md(ym, i.id)?.prevManual)}" placeholder="0" aria-label="${esc(i.name)} 전월 재고"><span class="print-val">${fmt(c.prev)}</span>` : `<span class="v-prevval">${fmt(c.prev)}</span>`}</td>
+        <td class="n" data-label="처음 있던 수">${!ro && !c.prevAuto ? `<input class="mini-in" data-f="prev" inputmode="decimal" value="${plain(md(ym, i.id)?.prevManual)}" placeholder="0" aria-label="${esc(i.name)} 처음 있던 수"><span class="print-val">${fmt(c.prev)}</span>` : `<span class="v-prevval">${fmt(c.prev)}</span>`}</td>
         <td class="n" data-label="+ 반입"><span class="v-in">${fmt(c.inQ)}</span></td>
         <td class="n" data-label="− 반출"><span class="v-out">${fmt(c.outQ)}</span></td>
         <td class="n" data-label="− ${esc(label)}">${ro ? `<span class="v-sales">${fmt(c.sales)}</span>` : `<input class="mini-in" data-f="sales" inputmode="decimal" value="${c.salesSet ? plain(c.sales) : ''}" placeholder="0" aria-label="${esc(i.name)} ${esc(label)} 수량"><span class="print-val">${fmt(c.sales)}</span>`}</td>
-        <td class="n exp" data-label="= 예상 재고"><span class="v-exp">${fmt(c.expected)}</span></td>
-        <td class="n act" data-label="실사 재고">${ro ? `<span class="v-act"></span>` : `<div class="act-box">
+        <td class="n exp" data-label="= 있어야 할 수"><span class="v-exp">${fmt(c.expected)}</span></td>
+        <td class="n act" data-label="센 수">${ro ? `<span class="v-act"></span>` : `<div class="act-box">
             <label><span class="lab">박스</span><input class="mini-in" data-f="box" inputmode="decimal" value="${plain(c.box)}" ${i.boxQty ? 'placeholder="박스"' : 'disabled placeholder="–"'} aria-label="${esc(i.name)} 박스 수량"></label>
             <label><span class="lab">낱개</span><input class="mini-in" data-f="ea" inputmode="decimal" value="${plain(c.ea)}" placeholder="낱개" aria-label="${esc(i.name)} 낱개 수량"></label>
             <output class="v-act screen-only"></output><span class="print-val v-actp"></span></div>`}</td>
-        <td class="n" data-label="오차"><span class="v-diff"></span></td>
-        <td data-label="오차 사유">${ro ? `<span class="v-reasonp"></span>` : `<input class="mini-in wide" data-f="reason" value="${esc(c.reason)}" placeholder="사유 (선택)" aria-label="${esc(i.name)} 오차 사유"><span class="print-val v-reasonp"></span>`}</td>
+        <td class="n" data-label="차이"><span class="v-diff"></span></td>
+        <td data-label="차이 난 까닭">${ro ? `<span class="v-reasonp"></span>` : `<input class="mini-in wide" data-f="reason" value="${esc(c.reason)}" placeholder="까닭 (선택)" aria-label="${esc(i.name)} 차이 난 까닭"><span class="print-val v-reasonp"></span>`}</td>
       </tr>`;
     });
   });
-  const firstMonthBanner = !confirmed && !prevConfirmed && items.length
-    ? `<div class="banner info no-print"><span class="b-ico">📌</span><div>${anyEarlierConfirmed ? `<b>${mLabel(prevYm)}이 확정되지 않아 전월 재고가 비어 있어요.</b>전월 재고를 직접 입력하거나 0으로 시작하세요.` : '<b>첫 달입니다. 전월 재고를 직접 입력하거나 0으로 시작하세요.</b>지난달 엑셀의 실사 재고를 ‘전월 재고’ 칸에 옮겨 적으면 돼요.'}</div></div>` : '';
+  const startMissing = items.some(i => { const c = calcs.find(x => x.i === i).c; return !c.locked && !c.prevAuto && md(ym, i.id)?.prevManual == null; });
+  const firstMonthBanner = !confirmed && !prevConfirmed && startMissing
+    ? `<div class="banner info no-print"><span class="b-ico">📌</span><div>${anyEarlierConfirmed ? `<b>${mLabel(prevYm)}을 마감하지 않아서 ‘처음 있던 수’가 비어 있어요.</b>직접 넣거나 0으로 시작하세요.` : '<b>처음 쓰는 달이에요. 품목마다 ‘처음 있던 수’를 넣어 주세요.</b>지난달 엑셀의 실사 재고를 옮겨 적으면 돼요. 재고 세기 화면에서 한 번에 넣을 수도 있어요.'}</div></div>` : '';
   main.innerHTML = `
     <div class="print-only"><h2 style="margin:0 0 4px">${SHOPS[shop].name} ${ymLabel(ym)} 재고조사 (월말 정산)</h2>
-      <p style="margin:0 0 8px">작성자: ${esc(rec?.author || '')} · ${confirmed ? '확정 ' + fmtDateTime(rec.confirmedAt) : '작성 중'} · 출력 ${fmtDateTime(Date.now())}</p></div>
+      <p style="margin:0 0 8px">작성자: ${esc(rec?.author || '')} · ${confirmed ? '마감 ' + fmtDateTime(rec.confirmedAt) : '작성 중'} · 출력 ${fmtDateTime(Date.now())}</p></div>
     <div class="page-head no-print">
       <div class="month-nav"><button class="btn" data-act="month-nav" data-d="-1" aria-label="이전 달">‹</button><strong class="num">${ymLabel(ym)}</strong>
         <button class="btn" data-act="month-nav" data-d="1" aria-label="다음 달" ${ym >= addMonth(curYm(), 1) ? 'disabled' : ''}>›</button>
-        ${confirmed ? '<span class="badge lock">🔒 확정됨</span>' : '<span class="badge muted">작성 중</span>'}</div>
+        ${confirmed ? '<span class="badge lock">🔒 마감됨</span>' : '<span class="badge muted">작성 중</span>'}</div>
       <div class="btn-row"><button class="btn sm" data-act="csv">${svg('file')}엑셀(CSV) 저장</button><button class="btn sm" data-act="print">${svg('print')}인쇄</button></div>
     </div>
-    ${confirmed ? `<div class="banner lock no-print"><span class="b-ico">🔒</span><div><b>${mLabel(ym)} 재고는 ${fmtDateTime(rec.confirmedAt)}에 확정되었어요 (작성자 ${esc(rec.author || '–')}).</b>읽기 전용이에요. 확정한 실사 재고가 ${mLabel(addMonth(ym, 1))} 전월 재고로 들어가 있어요.</div></div>` : ''}
+    ${confirmed ? `<div class="banner lock no-print"><span class="b-ico">🔒</span><div><b>${mLabel(ym)}은 ${fmtDateTime(rec.confirmedAt)}에 마감했어요 (작성자 ${esc(rec.author || '–')}).</b>보기만 할 수 있어요. 이 달의 ‘센 수’가 ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 들어가 있어요.</div></div>` : ''}
     ${firstMonthBanner}
-    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">전월 재고</th><th class="n">+&nbsp;반입</th><th class="n">−&nbsp;반출</th><th class="n">−&nbsp;${esc(label)}</th><th class="n">=&nbsp;예상 재고</th><th class="n">실사 재고<small class="th-sub">박스 · 낱개 → 합계</small></th><th class="n">오차</th><th>오차 사유</th></tr></thead>
+    ${items.length ? `<div class="tbl-wrap"><table class="tbl cards cards-lg" id="monthTbl"><thead><tr><th>품목</th><th class="n">처음 있던&nbsp;수<small class="th-sub">전월 재고</small></th><th class="n">+&nbsp;반입</th><th class="n">−&nbsp;반출</th><th class="n">−&nbsp;${esc(label)}</th><th class="n">=&nbsp;있어야 할&nbsp;수<small class="th-sub">예상 재고</small></th><th class="n">센 수<small class="th-sub">실사 재고 · 박스 + 낱개</small></th><th class="n">차이<small class="th-sub">오차</small></th><th>차이 난 까닭</th></tr></thead>
       <tbody>${body}</tbody></table></div>
       <p class="legend"><span class="minus-note">마이너스(−)는 부족을 의미</span>
-      <span class="muted">예상 재고 = 전월 재고 + 반입 − 반출 − ${esc(label)}</span><span class="muted">오차 = 실사 재고 − 예상 재고</span></p>
+      <span class="muted">있어야 할 수 = 처음 있던 수 + 반입 − 반출 − ${esc(label)}</span><span class="muted">차이 = 센 수 − 있어야 할 수</span></p>
       <section class="card" id="monthSummary"></section>
       <section class="card no-print">
         <h2><span class="h2-ico">${svg('month')}</span>${mLabel(ym)} 마감하기</h2><div class="confirm-box"><label class="fld"><span>작성자</span><input class="inp" id="author" value="${esc(rec?.author || '')}" placeholder="이름" ${confirmed ? 'disabled' : ''} autocomplete="name"></label>
-        ${confirmed ? `<button class="btn danger" data-act="unconfirm">확정 해제</button>` : `<button class="btn primary lg" data-act="confirm-month">월말 확정</button>`}</div>
-        <p class="small muted" style="margin:8px 0 0">${confirmed ? '실수로 확정했다면 [확정 해제]로 다시 고칠 수 있어요.' : `확정하면 이 달은 잠기고, 실사 재고가 ${mLabel(addMonth(ym, 1))} 전월 재고로 자동 입력돼요.`}</p>
+        ${confirmed ? `<button class="btn danger" data-act="unconfirm">마감 풀기</button>` : `<button class="btn primary lg" data-act="confirm-month">이번 달 마감하기</button>`}</div>
+        <p class="small muted" style="margin:8px 0 0">${confirmed ? '잘못 마감했다면 [마감 풀기]로 다시 고칠 수 있어요.' : `마감하면 이 달은 잠기고, ‘센 수’가 ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 자동으로 들어가요.`}</p>
       </section>`
     : `<div class="empty card"><span class="e-ico">🗓</span><strong>${ymLabel(ym)}에 정산할 품목이 없어요</strong><p>${confirmed ? '' : '품목을 등록하면 여기서 월말 정산을 할 수 있어요.'}</p>${confirmed ? '' : '<button class="btn primary" data-act="new-item">첫 품목 등록하기</button>'}</div>`}`;
   $$('#monthTbl tr[data-item]').forEach(refreshRow);
@@ -78,19 +79,19 @@ function refreshMonthSummary() {
   const cs = items.map(i => ({ i, c: monthCalc(i, ym) }));
   const diffs = cs.filter(x => x.c.counted && x.c.diff !== 0);
   const unc = cs.filter(x => !x.c.counted);
-  box.innerHTML = `<h2>오차 요약</h2>
-    <p style="margin:0 0 6px">오차가 있는 품목: <b class="${diffs.length ? 'minus' : 'match'}">${diffs.length}개</b>${unc.length ? ` · 실사 미입력: <b>${unc.length}개</b>` : ''} <span class="muted">(전체 ${items.length}개)</span></p>
-    ${diffs.length ? `<ul class="diff-list num">${diffs.map(({ i, c }) => `<li><span><b>${esc(i.name)}</b>${c.reason ? `<br><small class="muted">${esc(c.reason)}</small>` : ''}</span>${diffHTML(c.diff)}</li>`).join('')}</ul>` : `<p class="small muted" style="margin:0">${unc.length === items.length ? '아직 실사 재고를 입력하지 않았어요.' : '입력한 품목은 모두 예상 재고와 일치해요.'}</p>`}
+  box.innerHTML = `<h2>차이 요약</h2>
+    <p style="margin:0 0 6px">차이 난 품목: <b class="${diffs.length ? 'minus' : 'match'}">${diffs.length}개</b>${unc.length ? ` · 아직 안 센 품목: <b>${unc.length}개</b>` : ''} <span class="muted">(전체 ${items.length}개)</span></p>
+    ${diffs.length ? `<ul class="diff-list num">${diffs.map(({ i, c }) => `<li><span><b>${esc(i.name)}</b>${c.reason ? `<br><small class="muted">${esc(c.reason)}</small>` : ''}</span>${diffHTML(c.diff)}</li>`).join('')}</ul>` : `<p class="small muted" style="margin:0">${unc.length === items.length ? '아직 센 품목이 없어요.' : '센 품목은 모두 있어야 할 수와 딱 맞아요.'}</p>`}
     ${unc.length && unc.length < items.length ? `<p class="small muted" style="margin:6px 0 0">미입력: ${unc.map(x => esc(x.i.name)).join(', ')}</p>` : ''}`;
 }
 async function confirmMonth() {
   const ym = S.monthYm, shop = S.shop; const items = monthItems(shop, ym);
   const unc = items.filter(i => !monthCalc(i, ym).counted);
-  const ok = await confirmDialog({ title: `${SHOPS[shop].name} ${ymLabel(ym)} 월말 확정`, ok: '월말 확정',
-    message: `<p style="margin-top:0"><b>${mLabel(ym)} 재고를 확정하면 ${mLabel(addMonth(ym, 1))} 전월 재고로 자동 입력됩니다.</b></p>
+  const ok = await confirmDialog({ title: `${SHOPS[shop].name} ${ymLabel(ym)} 마감하기`, ok: '이번 달 마감하기',
+    message: `<p style="margin-top:0"><b>마감하면 ${mLabel(ym)}의 ‘센 수’가 ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 자동으로 들어가요.</b></p>
       <dl class="kv"><dt>대상</dt><dd>${SHOPS[shop].name} · 품목 ${items.length}개</dd><dt>작성자</dt><dd>${esc(monthRec(shop, ym)?.author || '(비어 있음)')}</dd></dl>
-      ${unc.length ? `<div class="banner warn" style="margin:10px 0 0"><div><b>실사 미입력 ${unc.length}개</b>는 예상 재고 값으로 확정돼요: ${unc.slice(0, 6).map(i => esc(i.name)).join(', ')}${unc.length > 6 ? ' 외' : ''}</div></div>` : ''}
-      <p class="small muted">확정 후에는 이 달의 실사·${esc(salesLabel())}·반출입을 고칠 수 없어요(확정 해제로 다시 열 수 있음).</p>` });
+      ${unc.length ? `<div class="banner warn" style="margin:10px 0 0"><div><b>아직 안 센 품목 ${unc.length}개</b>는 ‘있어야 할 수’를 센 수로 보고 마감돼요: ${unc.slice(0, 6).map(i => esc(i.name)).join(', ')}${unc.length > 6 ? ' 외' : ''}</div></div>` : ''}
+      <p class="small muted">마감한 뒤에는 이 달의 센 수·${esc(salesLabel())}·반출입을 고칠 수 없어요([마감 풀기]로 다시 열 수 있어요).</p>` });
   if (!ok) return;
   const recs = [];
   items.forEach(i => {
@@ -106,18 +107,18 @@ async function confirmMonth() {
   const r = monthRec(shop, ym) || { id: shop + '|' + ym, shop, ym };
   Object.assign(r, { confirmed: true, confirmedAt: Date.now(), author: ($('#author')?.value || r.author || '').trim() });
   await save('months', r);
-  toast(`${mLabel(ym)} 재고를 확정했어요. ${mLabel(addMonth(ym, 1))} 전월 재고로 들어갔어요.`);
+  toast(`${mLabel(ym)}을 마감했어요. ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’로 들어갔어요.`);
   render();
 }
 async function unconfirmMonth() {
   const ym = S.monthYm, shop = S.shop;
-  if (isConfirmed(shop, addMonth(ym, 1))) { toast(`${mLabel(addMonth(ym, 1))}이 이미 확정되어 있어요. ${mLabel(addMonth(ym, 1))} 확정을 먼저 해제하세요.`, { error: true }); return; }
-  const s1 = await confirmDialog({ title: `${ymLabel(ym)} 확정 해제 (1/2)`, ok: '다음 단계', danger: true,
-    message: `<b>${SHOPS[shop].name} ${mLabel(ym)}</b> 확정을 해제하면 이 달을 다시 고칠 수 있고, ${mLabel(addMonth(ym, 1))} 전월 재고 자동 입력도 풀려요.` });
+  if (isConfirmed(shop, addMonth(ym, 1))) { toast(`${mLabel(addMonth(ym, 1))}이 이미 마감되어 있어요. ${mLabel(addMonth(ym, 1))} 마감을 먼저 풀어 주세요.`, { error: true }); return; }
+  const s1 = await confirmDialog({ title: `${ymLabel(ym)} 마감 풀기 (1/2)`, ok: '다음 단계', danger: true,
+    message: `<b>${SHOPS[shop].name} ${mLabel(ym)}</b> 마감을 풀면 이 달을 다시 고칠 수 있고, ${mLabel(addMonth(ym, 1))}의 ‘처음 있던 수’ 자동 입력도 풀려요.` });
   if (!s1) return;
-  const s2 = await openModal({ title: `${ymLabel(ym)} 확정 해제 (2/2)`,
-    body: `<p style="margin-top:0">정말 해제하려면 아래 칸에 <b>해제</b>라고 입력하세요.</p><input class="inp" id="unc" autocomplete="off" aria-label="확인 문구">`,
-    actions: [{ label: '취소', value: false }, { label: '확정 해제', cls: 'danger solid', onClick: ({ el }) => { if ($('#unc', el).value.trim() !== '해제') { toast('‘해제’라고 입력해야 진행돼요.', { error: true }); return false; } return true; } }] });
+  const s2 = await openModal({ title: `${ymLabel(ym)} 마감 풀기 (2/2)`,
+    body: `<p style="margin-top:0">정말 풀려면 아래 칸에 <b>풀기</b>라고 입력하세요.</p><input class="inp" id="unc" autocomplete="off" aria-label="확인 문구">`,
+    actions: [{ label: '취소', value: false }, { label: '마감 풀기', cls: 'danger solid', onClick: ({ el }) => { if ($('#unc', el).value.trim() !== '풀기') { toast('‘풀기’라고 입력해야 진행돼요.', { error: true }); return false; } return true; } }] });
   if (!s2) return;
   const other = shop === 'gift' ? 'exp' : 'gift';
   const recs = [];
@@ -128,7 +129,7 @@ async function unconfirmMonth() {
   });
   await saveMany('monthData', recs);
   const r = monthRec(shop, ym); r.confirmed = false; r.unconfirmedAt = Date.now(); await save('months', r);
-  toast(`${mLabel(ym)} 확정을 해제했어요. 다시 수정할 수 있어요.`);
+  toast(`${mLabel(ym)} 마감을 풀었어요. 다시 고칠 수 있어요.`);
   render();
 }
 function exportCSV() {
@@ -137,7 +138,7 @@ function exportCSV() {
   const n = v => v === null || v === undefined ? '' : Calc.round(v);
   const lines = [
     [`${SHOPS[shop].name} ${ymLabel(ym)} 재고조사 (월말 정산)`],
-    ['작성자', rec?.author || '', '상태', rec?.confirmed ? '확정 ' + fmtDateTime(rec.confirmedAt) : '작성 중'],
+    ['작성자', rec?.author || '', '상태', rec?.confirmed ? '마감 ' + fmtDateTime(rec.confirmedAt) : '작성 중'],
     [],
     ['카테고리', '품목', '단위', '1박스 기준', '전월 재고', '반입', '반출', label, '예상 재고', '실사 박스', '실사 낱개', '실사 재고', '오차', '오차 사유'],
   ];

@@ -98,6 +98,17 @@
   .crow .reason{grid-column:1/-1}
 }
 
+/* 처음 있던 수 넣기 (모달) */
+.ss-list{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.ss-row{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-2) var(--s-3);border-bottom:1px solid var(--line-2)}
+.ss-row:last-child{border-bottom:0}
+.ss-row .grow{flex:1;min-width:0}
+.ss-row .grow small{display:block;color:var(--muted);font-size:var(--fs-xs)}
+.ss-row .inp{width:110px;flex:none;text-align:right;font-weight:800;font-size:var(--fs-lg)}
+.ss-paste{margin:0 0 var(--s-3);padding:var(--s-2) var(--s-3);border:1px dashed var(--line-strong);border-radius:var(--r-md)}
+.ss-paste summary{min-height:44px;display:flex;align-items:center;font-weight:800;cursor:pointer;color:var(--brand-strong)}
+.ss-paste textarea{min-height:90px}
+
 /* ---------- 반출입 ---------- */
 .conv{font-size:15px;font-weight:800;color:var(--brand-strong);background:var(--brand-tint);border:1px solid var(--brand-soft);border-radius:var(--r-md);padding:var(--s-3) var(--s-4);font-variant-numeric:tabular-nums}
 .filters{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-2);margin-bottom:var(--s-3)}
