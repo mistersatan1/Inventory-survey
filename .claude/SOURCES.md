@@ -17,6 +17,10 @@
 | grill-me | `grill-me` | https://github.com/mattpocock/skills (skills/productivity/grill-me) | 4ae2317 | MIT |
 | superpowers | 15개 전부 (`using-superpowers`, `brainstorming`, `writing-plans`, `executing-plans`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` 등) | https://github.com/obra/superpowers (skills/) | 22f0b46 | MIT |
 | ui-ux-pro-max | `ui-ux-pro-max` | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill (.claude/skills/ui-ux-pro-max) | 4f2dbb6 | MIT |
+| unslop | `unslop` | https://github.com/heydamir/unslop (skills/unslop) | a6f121e | CC-BY-4.0 (저작자 표시: Damir Sokolovsky, 폴더의 LICENSE.upstream) |
+| emilkowalski/skills | 15개: `animate`, `improve-animations`, `remove-animations`, `review-animations`, `find-animation-opportunities`, `animation-performance`, `animation-vocabulary`, `choreograph`, `apple-design`, `emil-design-eng`, `break-ui`, `prototype`, `pick-ui-library`, `mobile-native`, `ask-sonner` | https://github.com/emilkowalski/skills (skills/) | c8a7962 | MIT |
+
+emilkowalski/skills 17개 중 `write-swift`(Swift 앱용), `animate-expo`(React Native·Expo용)는 웹 프로젝트와 관계없어 넣지 않았다.
 
 ### designer-skills에서 고른 22개 (111개 중 웹 UI 관련만)
 - ui-design: color-system, responsive-design, spacing-system, typography-scale, visual-hierarchy, layout-grid, platform-conventions
@@ -39,5 +43,6 @@
 - `impeccable`: 처음 실행할 때 `scripts/impeccable`이 GitHub Releases(pbakaus/impeccable)에서 실행 파일을 내려받고 `engine-checksums.txt`의 SHA-256으로 검증한다.
 - `design-taste-frontend`: 폴더가 약 40MB(예시 에셋)다. 검사 스크립트(`scripts/*.mjs`)는 브라우저에서 화면을 검사하고, `photos.mjs`·`icons.mjs`는 사진·아이콘을 인터넷에서 내려받는다.
 - `ui-ux-pro-max`: Python 스크립트(`scripts/search.py` 등)로 CSV 데이터를 검색한다. Python 3가 필요하다.
+- `unslop`: `scripts/snapshot.mjs`는 열린 페이지의 스타일시트를 읽고, `scripts/story.mjs`는 로컬 ffmpeg로 전후 비교 영상을 만든다.
 - `figma-*`: Figma MCP 서버(`.mcp.json`의 `figma`)가 연결되고 Figma 로그인이 되어 있어야 동작한다.
 - 이 저장소의 재고 앱은 "외부 라이브러리·웹폰트 최소화, 오프라인 동작"이 원칙이다. 웹폰트·CDN을 권하는 스킬(taste, ui-ux-pro-max 등)의 제안은 이 원칙과 충돌하면 따르지 않는다.
