@@ -1,0 +1,43 @@
+# 외부 스킬·에이전트 출처
+
+`.claude/skills`, `.claude/agents`, `.mcp.json`에 넣은 것들의 원본 기록이다. 모두 2026-11-08에 GitHub 공개 저장소에서 얕게 복제해 가져왔고, **내용은 수정하지 않았다**(폴더 이름만 아래 표처럼 정함).
+스킬은 Claude에게 주는 지시문이고 일부는 스크립트를 실행하므로, 새로 넣거나 갱신할 때는 내용과 스크립트를 먼저 읽어 본다.
+
+## 스킬
+
+| 요청 이름 | 설치한 폴더 | 원본 | 커밋 | 라이선스 |
+|---|---|---|---|---|
+| frontend-design | `frontend-design` | https://github.com/anthropics/skills (skills/frontend-design) | 2c5958e | Apache-2.0 (폴더의 LICENSE.txt) |
+| design-taste-frontend | `design-taste-frontend` | https://github.com/Leonxlnx/taste-skill (skills/taste-skill, v2.5.1) | f6b7657 | MIT |
+| animate | `impeccable` (`/impeccable animate`) | https://github.com/pbakaus/impeccable (.claude/skills/impeccable, v4.8.1) | 924bbd1 | Apache-2.0 |
+| figma | `figma-use`, `figma-design-to-code`, `figma-generate-design`, `figma-code-connect`, `figma-code-workflows`, `figma-implement-motion`, `figma-create-new-file` | https://github.com/figma/mcp-server-guide (skills/) | 19be8d5 | 저장소에 라이선스 파일 없음 (Figma 공식) |
+| playwright-mcp | `.mcp.json`의 `playwright` | https://github.com/microsoft/playwright-mcp (npm `@playwright/mcp@0.0.83`) | – | Apache-2.0 |
+| brandkit | `brandkit` | https://github.com/Leonxlnx/imagegen-skills (skills/brandkit) | beb16b0 | MIT |
+| designer-skills | 아래 22개 | https://github.com/Owl-Listener/designer-skills | 9a6930c | MIT |
+| grill-me | `grill-me` | https://github.com/mattpocock/skills (skills/productivity/grill-me) | 4ae2317 | MIT |
+| superpowers | 15개 전부 (`using-superpowers`, `brainstorming`, `writing-plans`, `executing-plans`, `systematic-debugging`, `test-driven-development`, `verification-before-completion` 등) | https://github.com/obra/superpowers (skills/) | 22f0b46 | MIT |
+| ui-ux-pro-max | `ui-ux-pro-max` | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill (.claude/skills/ui-ux-pro-max) | 4f2dbb6 | MIT |
+
+### designer-skills에서 고른 22개 (111개 중 웹 UI 관련만)
+- ui-design: color-system, responsive-design, spacing-system, typography-scale, visual-hierarchy, layout-grid, platform-conventions
+- interaction-design: form-design, error-handling-ux, loading-states, feedback-patterns, navigation-patterns, search-ux, micro-interaction-spec, fitts-law, onboarding-design
+- ux-strategy: information-architecture, design-brief, content-strategy
+- visual-critique: critique-visual-hierarchy, critique-information-density, critique-affordance
+
+전부 넣으면 세션 시작 때 스킬 설명만으로 토큰을 많이 쓰므로 뺐다. 나머지(리서치·디자인옵스·프로토타이핑 등)가 필요하면 원본에서 같은 방식으로 추가한다.
+
+## 에이전트 (`.claude/agents`)
+사용자 저장소 `mistersatan1/closing-d7`의 `.claude/agents`에서 복사했다. 그 원본은 https://github.com/msitarzewski/agency-agents (MIT, `LICENSE.agency-agents`).
+
+| 역할 | 에이전트 |
+|---|---|
+| UI·UX 디자인 | design-ui-designer, design-ux-architect, design-ux-researcher, design-brand-guardian, design-ui-finish-gate-reviewer |
+| 기획 | product-manager, product-sprint-prioritizer, product-feedback-synthesizer |
+| 개발·검증 | engineering-frontend-developer, engineering-minimal-change-engineer, testing-accessibility-auditor, testing-evidence-collector |
+
+## 실행·네트워크 관련 확인 사항
+- `impeccable`: 처음 실행할 때 `scripts/impeccable`이 GitHub Releases(pbakaus/impeccable)에서 실행 파일을 내려받고 `engine-checksums.txt`의 SHA-256으로 검증한다.
+- `design-taste-frontend`: 폴더가 약 40MB(예시 에셋)다. 검사 스크립트(`scripts/*.mjs`)는 브라우저에서 화면을 검사하고, `photos.mjs`·`icons.mjs`는 사진·아이콘을 인터넷에서 내려받는다.
+- `ui-ux-pro-max`: Python 스크립트(`scripts/search.py` 등)로 CSV 데이터를 검색한다. Python 3가 필요하다.
+- `figma-*`: Figma MCP 서버(`.mcp.json`의 `figma`)가 연결되고 Figma 로그인이 되어 있어야 동작한다.
+- 이 저장소의 재고 앱은 "외부 라이브러리·웹폰트 최소화, 오프라인 동작"이 원칙이다. 웹폰트·CDN을 권하는 스킬(taste, ui-ux-pro-max 등)의 제안은 이 원칙과 충돌하면 따르지 않는다.
