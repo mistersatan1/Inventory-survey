@@ -1,0 +1,24 @@
+/* =====================================================================
+ * 인쇄 (월말 정산 표를 A4 가로로) — index.html에서 media="print"로만 불러온다.
+ * ===================================================================== */
+@page{size:A4 landscape;margin:10mm}
+body{background:#fff;font-size:11px;color:#000}
+.topbar,.nav,.notice,.no-print,.bottom-bar,.toast-root,.modal-back,.skip{display:none!important}
+.layout{display:block}
+main{padding:0;max-width:none}
+.print-only{display:block}
+.tbl-wrap{border:0;border-radius:0}
+.tbl,.tbl.cards{display:table!important;font-size:10.5px}
+.tbl.cards thead{display:table-header-group!important}
+.tbl.cards tbody{display:table-row-group!important}
+.tbl.cards tr{display:table-row!important;padding:0}
+.tbl.cards td{display:table-cell!important;padding:4px 6px!important;border:1px solid #999!important;text-align:inherit}
+.tbl.cards td.n{text-align:right!important}
+.tbl.cards td::before{display:none!important}
+.tbl th{border:1px solid #999;background:#eee!important;color:#000;padding:4px 6px}
+.tbl td.exp,.tbl td.act,.tbl tr.cat-row td{background:none!important;color:#000}
+.av{display:none!important}
+.screen-only,input,.act-box label{display:none!important}
+.print-val{display:inline!important}
+.card{border:0;padding:0}
+.diff{color:#000!important}
