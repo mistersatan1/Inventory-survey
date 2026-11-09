@@ -60,6 +60,7 @@ async function canLeave() {
     if (v === 'go') { S.countDirty = false; return true; }
     return false;
   }
+  if (S.page === 'manage' && S.itemGrid) return leaveGrid();
   if (S.page === 'mov' && movFormApi && movFormApi.isDirty()) {
     return confirmDialog({ title: '저장하지 않은 반출입 입력이 있어요', message: '입력 중인 반출입 내용이 저장되지 않고 사라져요. 이동할까요?', ok: '저장 안 하고 이동', danger: true, cancel: '계속 입력하기' });
   }
@@ -83,6 +84,7 @@ async function switchShop(shop) {
 }
 function render() {
   movFormApi = null;
+  if (S.page !== 'manage') { S.itemGrid = false; gridApi = null; }
   renderShell();
   const fn = { count: renderCount, mov: renderMov, inv: renderInv, month: renderMonth, manage: renderManage, settings: renderSettings }[S.page];
   fn($('#main'));
@@ -154,6 +156,13 @@ const actions = {
   'mov-del': el => deleteMovement(el.dataset.id),
   'mov-month': el => { S.movYm = addMonth(S.movYm, +el.dataset.d); S.movFilter.date = ''; renderMov($('#main')); },
   'mov-clear': () => { S.movFilter = { item: '', type: '', date: '' }; renderMov($('#main')); },
+  'inv-sort': el => { const k = el.dataset.k; S.invSort = { key: k, dir: S.invSort.key === k ? -S.invSort.dir : 1 }; renderInv($('#main')); },
+  'inv-csv': () => exportItemsCSV(invRowsShown, '재고목록'),
+  'items-csv': () => exportItemsCSV(stockRows(itemsFor(S.shop)), '품목목록'),
+  'item-grid': () => { S.itemGrid = true; renderManage($('#main')); },
+  'grid-save': () => gridApi && gridApi.save(),
+  'grid-cancel': async () => { if (await leaveGrid()) renderManage($('#main')); },
+  'count-sheet': () => openCountSheet(),
   'inv-st': el => { S.invSt = S.invSt === el.dataset.k ? '' : el.dataset.k; renderInv($('#main')); },
   'inv-cat': el => { S.invCat = el.dataset.id; renderInv($('#main')); },
   'month-nav': el => { S.monthYm = addMonth(S.monthYm, +el.dataset.d); renderMonth($('#main')); },
@@ -161,7 +170,7 @@ const actions = {
   unconfirm: () => unconfirmMonth(),
   csv: () => exportCSV(),
   print: () => window.print(),
-  'mg-tab': el => { S.mgTab = el.dataset.t; renderManage($('#main')); },
+  'mg-tab': async el => { if (S.itemGrid && !(await leaveGrid())) return; S.mgTab = el.dataset.t; renderManage($('#main')); },
   'add-cat': () => addCategoryFromForm(),
   'rename-cat': el => renameCategory(el.dataset.id),
   'del-cat': el => deleteCategory(el.dataset.id),
@@ -240,7 +249,7 @@ document.addEventListener('focusout', e => {
 let remotePending = false;
 function isBusy() {
   const a = document.activeElement;
-  return !!document.querySelector('.modal-back') || !!(a && a.closest && a.closest('#main') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  return !!document.querySelector('.modal-back') || !!(gridApi && gridApi.dirty()) || !!(a && a.closest && a.closest('#main') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
 }
 function flushRemote() {
   if (!remotePending || isBusy() || !DB.items) return;

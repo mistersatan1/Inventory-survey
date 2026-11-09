@@ -67,9 +67,9 @@ function planImport(rows, map, opts) {
   return rows.map(r => {
     const cell = k => (map[k] === undefined || map[k] === '' ? '' : (r[+map[k]] || '').trim());
     const name = cell('name');
-    let cat = cell('cat'); if (cat) lastCat = cat; else cat = lastCat;
+    let cat = cell('cat'); if (cat) lastCat = cat; else cat = lastCat; const catGiven = !!cat;
     const qtyRaw = cell('qty'); const qty = qtyRaw === '' ? null : numFrom(qtyRaw);
-    const p = { name, cat: cat || opts.defaultCat, qty, unit: cell('unit'), box: numFrom(cell('box')), low: numFrom(cell('low')) };
+    const p = { name, catGiven, cat: cat || opts.defaultCat, qty, unit: cell('unit'), box: numFrom(cell('box')), low: numFrom(cell('low')) };
     if (!name) return { ...p, act: 'skip', why: '품목명이 비어 있음' };
     if (/^(합계|소계|총계|total)$/i.test(name)) return { ...p, act: 'skip', why: '합계 줄' };
     if (qtyRaw !== '' && qty === null) return { ...p, act: 'skip', why: `수량 ‘${qtyRaw}’를 숫자로 읽지 못함` };
@@ -103,10 +103,21 @@ function applyImport(plan, opts) {
       it = { id: uid(), name: p.name, categoryId: c.id, unit: p.unit || '개', boxQty: p.box || 0, lowStock: p.low, memo: '', photo: null, archived: false, order: order++, createdAt: now + order };
       items.push(it);
     } else {
-      // 있는 품목은 비어 있는 정보만 채운다 (이미 넣은 값은 덮어쓰지 않음)
+      // 있는 품목: 기본은 비어 있는 정보만 채운다. '덮어쓰기'를 고르면 엑셀 값으로 바꾼다.
       let changed = false;
-      if (!it.boxQty && p.box) { it.boxQty = p.box; changed = true; }
-      if ((it.lowStock == null || it.lowStock === '') && p.low != null) { it.lowStock = p.low; changed = true; }
+      if (opts.overwrite) {
+        if (p.unit && p.unit !== it.unit) { it.unit = p.unit; changed = true; }
+        if (p.box != null && p.box !== (it.boxQty || 0)) { it.boxQty = p.box; changed = true; }
+        if (p.low != null && p.low !== it.lowStock) { it.lowStock = p.low; changed = true; }
+        if (p.catGiven) {
+          let c = catByName.get(norm(p.cat));
+          if (!c) { c = { id: uid(), name: p.cat, shop: opts.scope, order: catOrder++, createdAt: now }; catByName.set(norm(p.cat), c); newCats.push(c); }
+          if (c.id !== it.categoryId) { it.categoryId = c.id; changed = true; }
+        }
+      } else {
+        if (!it.boxQty && p.box) { it.boxQty = p.box; changed = true; }
+        if ((it.lowStock == null || it.lowStock === '') && p.low != null) { it.lowStock = p.low; changed = true; }
+      }
       if (it.archived) { it.archived = false; changed = true; }
       if (changed) items.push(it);
     }
@@ -136,6 +147,8 @@ function openExcelImport() {
           <label><input type="radio" name="xlTarget" value="count"> 오늘 센 수 <small class="muted">(오늘 창고에서 센 결과)</small></label></div></div>
         <div class="fld"><span>새로 만드는 카테고리는</span>
           <div class="scope"><label><input type="radio" name="xlScope" value="${S.shop}" checked> ${SHOPS[S.shop].name} 전용</label><label><input type="radio" name="xlScope" value="common"> 두 매장 공용</label></div></div>
+        <label class="toggle"><input type="checkbox" id="xlOverwrite"> 이미 있는 품목의 단위·1박스 기준·부족 기준·카테고리도 엑셀 값으로 바꾸기</label>
+        <p class="small muted" style="margin:-6px 0 0">[품목 관리 → 엑셀로 내보내기]로 받은 파일을 엑셀에서 고친 뒤 붙여넣을 때 켜세요. 끄면 비어 있는 정보만 채워요.</p>
       </div>
       <div id="xlPrev"></div>`,
     actions: [{ label: '취소' }, { label: '등록하기', cls: 'primary', onClick: ({ el }) => {
@@ -157,7 +170,9 @@ function openExcelImport() {
         // 사용자가 이미 고른 열은 유지, 처음이면 짐작한 값
         if (!paint.touched) map = guessed || guessNoHeader(rows);
         const n = Math.max(...all.map(r => r.length));
+        const fromApp = header && header.some(h => norm(h) === norm('지금 재고'));
         $('#xlMap', el).innerHTML = `<div class="xl-map"><p class="small" style="margin:0 0 6px"><b>${header ? '제목줄을 보고 칸을 맞췄어요.' : '제목줄이 없어서 칸을 짐작했어요.'}</b> 틀리면 바꿔 주세요.</p>
+          ${fromApp ? `<p class="small" style="margin:0 0 6px;color:var(--warn)"><b>이 앱에서 내보낸 파일이네요.</b> ‘지금 재고’ 칸은 자동으로 재고에 넣지 않아요(처음 있던 수가 바뀌지 않게). 재고도 넣으려면 ‘재고 수량’에서 직접 고르세요.</p>` : ''}
           <div class="xl-map-grid">${IMPORT_ROLES.map(r => `<label class="fld"><span>${r.label}${r.need ? ' *' : ''}</span><select class="inp" data-role="${r.key}">
             ${r.need ? '' : '<option value="">(없음)</option>'}${Array.from({ length: n }, (_, i) => `<option value="${i}" ${String(map[r.key]) === String(i) ? 'selected' : ''}>${esc(colName(i))}</option>`).join('')}</select></label>`).join('')}</div></div>`;
         $('#xlOpts', el).hidden = false;
@@ -179,11 +194,11 @@ function openExcelImport() {
       el.addEventListener('change', e => {
         const s = e.target.closest('[data-role]');
         if (s) { map[s.dataset.role] = s.value; paint.touched = true; preview(); return; }
-        if (e.target.name === 'xlTarget' || e.target.name === 'xlScope') preview();
+        if (e.target.name === 'xlTarget' || e.target.name === 'xlScope' || e.target.id === 'xlOverwrite') preview();
       });
     } });
   function readOpts(el) {
     return { target: $('input[name=xlTarget]:checked', el)?.value || 'prev', scope: $('input[name=xlScope]:checked', el)?.value || S.shop,
-      defaultCat: '엑셀에서 가져옴' };
+      defaultCat: '엑셀에서 가져옴', overwrite: !!$('#xlOverwrite', el)?.checked };
   }
 }

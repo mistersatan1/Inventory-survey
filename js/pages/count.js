@@ -156,6 +156,7 @@ function renderCount(main) {
         ${start.length && !startMissing ? `<button class="btn sm" data-act="start-stock">처음 있던 수 고치기</button>` : ''}
         <label class="toggle"><input type="checkbox" id="onlyEmpty" ${S.onlyEmpty ? 'checked' : ''}> 아직 안 센 것만</label>
         <button class="btn sm" data-act="paste-sales" ${locked ? 'disabled' : ''}>${svg('file')}${esc(salesLabel())} 수량 붙여넣기</button>
+        <button class="btn sm" data-act="count-sheet">${svg('print')}점검표 인쇄</button>
         <span class="kbd-hint" aria-hidden="true"><kbd>Enter</kbd> 아래 품목 <kbd>Tab</kbd> 옆 칸 <kbd>/</kbd> 찾기</span>
       </div>
     </div>

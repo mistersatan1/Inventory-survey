@@ -22,3 +22,27 @@ main{padding:0;max-width:none}
 .print-val{display:inline!important}
 .card{border:0;padding:0}
 .diff{color:#000!important}
+
+/* ---------- 종이 점검표 (재고 세기 → 점검표 인쇄) ---------- */
+#printRoot{display:none}
+body.print-sheet > *:not(#printRoot){display:none!important}
+body.print-sheet #printRoot{display:block!important;page:sheet}
+@page sheet{size:A4 portrait;margin:12mm 10mm}
+.sheet{font-size:11.5px;color:#000}
+.sheet-h h1{margin:0 0 4px;font-size:18px}
+.sheet-meta{display:flex;gap:24px;flex-wrap:wrap;font-size:12px;margin-bottom:4px}
+.sheet-meta .muted{color:#555}
+.sheet-tip{margin:0 0 8px;font-size:10.5px;color:#333}
+.sheet-tbl{width:100%;border-collapse:collapse}
+.sheet-tbl th,.sheet-tbl td{border:1px solid #777;padding:0 6px;height:26px;text-align:left;vertical-align:middle}
+.sheet-tbl th{background:#eee!important;font-size:11px;height:22px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet-tbl tr{break-inside:avoid}
+.sheet-tbl thead{display:table-header-group}
+.sheet-grp td{background:#f3f3f3!important;font-weight:800;height:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet-tbl .c-no{width:38px;text-align:center;white-space:nowrap}
+.sheet-tbl .c-unit{width:40px;text-align:center}
+.sheet-tbl .c-box{width:46px;text-align:right}
+.sheet-tbl .c-num{width:62px;text-align:right}
+.sheet-tbl .c-in{width:64px;text-align:center;color:#999}
+.sheet-tbl th.c-in{color:#000}
+.sheet-tbl .c-memo{width:22%}

@@ -101,13 +101,87 @@ async function deleteCategory(id) {
       toast(`품목 ${its.length}개를 ‘${DB.categories.get(to).name}’로 옮기고 ‘${c.name}’을 삭제했어요`); render();
     } }] });
 }
+/* ---------- 표로 한 번에 고치기 (PC에서 여러 품목을 수정 창 없이) ----------
+ * 칸을 고치면 노랗게 표시되고, [바뀐 내용 저장]을 눌러야 한 번에 저장된다.
+ * 입력 칸은 data-gf/data-gid 를 써서 재고 세기용 자동 저장(data-f/data-item)과 섞이지 않게 한다. */
+let gridApi = null;
+const GRID_UNITS = ['개', 'ea', '포대', '봉', '통', '롤', 'g', 'kg', 'L', 'ml', '매', '장', '포', '병', '세트'];
+function renderItemGrid(box) {
+  const items = itemsFor(S.shop); const cats = catsFor(S.shop);
+  box.innerHTML = `<div class="grid-bar"><div class="grow"><b>표로 한 번에 고치기</b><small class="muted">칸을 고친 뒤 [바뀐 내용 저장]을 눌러요. <kbd>Enter</kbd> 아래 품목 · <kbd>Tab</kbd> 옆 칸</small></div>
+      <span class="grid-dirty" id="gridDirty" aria-live="polite">바뀐 칸 없음</span>
+      <button class="btn" data-act="grid-cancel">그만 고치기</button><button class="btn primary" data-act="grid-save" id="gridSave" disabled>바뀐 내용 저장</button></div>
+    ${items.length ? `<div class="tbl-wrap"><table class="tbl grid-tbl" id="itemGrid"><thead><tr><th>품목명</th><th>카테고리</th><th>단위</th><th class="n">1박스 기준</th><th class="n">부족 기준</th><th>메모</th></tr></thead><tbody>
+    ${items.map(i => `<tr data-gid="${i.id}">
+      <td><input class="inp" data-gf="name" value="${esc(i.name)}" aria-label="품목명" autocomplete="off"></td>
+      <td><select class="inp" data-gf="categoryId" aria-label="${esc(i.name)} 카테고리">${cats.map(c => `<option value="${c.id}" ${c.id === i.categoryId ? 'selected' : ''}>${esc(c.name)}${c.shop === 'common' ? ' (공용)' : ''}</option>`).join('')}</select></td>
+      <td><input class="inp" data-gf="unit" list="gridUnits" value="${esc(i.unit || '개')}" aria-label="${esc(i.name)} 단위" autocomplete="off"></td>
+      <td class="n"><input class="inp num" data-gf="boxQty" inputmode="decimal" value="${i.boxQty ? plain(i.boxQty) : ''}" placeholder="없음" aria-label="${esc(i.name)} 1박스 기준"></td>
+      <td class="n"><input class="inp num" data-gf="lowStock" inputmode="decimal" value="${plain(i.lowStock)}" placeholder="–" aria-label="${esc(i.name)} 부족 기준"></td>
+      <td><input class="inp" data-gf="memo" value="${esc(i.memo || '')}" aria-label="${esc(i.name)} 메모" autocomplete="off"></td></tr>`).join('')}
+    </tbody></table></div><datalist id="gridUnits">${GRID_UNITS.map(u => `<option value="${u}">`).join('')}</datalist>`
+    : '<div class="empty card"><strong>고칠 품목이 없어요</strong></div>'}`;
+  const tbl = $('#itemGrid', box); if (!tbl) { gridApi = null; return; }
+  const cells = () => $$('[data-gf]', tbl);
+  cells().forEach(e => { e.dataset.orig = e.value; });
+  const dirtyCells = () => cells().filter(e => e.value !== e.dataset.orig);
+  const update = () => {
+    cells().forEach(e => e.classList.toggle('dirty', e.value !== e.dataset.orig));
+    const n = dirtyCells().length; const rows = new Set(dirtyCells().map(e => e.closest('tr').dataset.gid)).size;
+    $('#gridDirty', box).textContent = n ? `${rows}개 품목 · 바뀐 칸 ${n}개` : '바뀐 칸 없음';
+    $('#gridSave', box).disabled = !n;
+  };
+  tbl.addEventListener('input', e => { if (e.target.matches('[data-gf]')) { e.target.classList.remove('bad'); update(); } });
+  tbl.addEventListener('change', update);
+  tbl.addEventListener('keydown', e => { // Enter: 아래 품목의 같은 칸
+    if (e.key !== 'Enter' || e.isComposing || !e.target.matches('[data-gf]')) return;
+    e.preventDefault();
+    const tr = e.shiftKey ? e.target.closest('tr').previousElementSibling : e.target.closest('tr').nextElementSibling;
+    const n = tr && $(`[data-gf="${e.target.dataset.gf}"]`, tr);
+    if (n) { n.focus(); if (n.select) n.select(); n.scrollIntoView({ block: 'nearest' }); }
+  });
+  gridApi = {
+    dirty: () => tbl.isConnected ? dirtyCells().length : 0,
+    save() {
+      const byRow = new Map();
+      for (const e of dirtyCells()) { const id = e.closest('tr').dataset.gid; if (!byRow.has(id)) byRow.set(id, []); byRow.get(id).push(e); }
+      const recs = []; let bad = null;
+      for (const [id, es] of byRow) {
+        const it = DB.items.get(id); if (!it) continue; const patch = {};
+        for (const e of es) {
+          const f = e.dataset.gf; let v = e.value.trim();
+          if (f === 'name' && !v) { bad = bad || e; e.classList.add('bad'); continue; }
+          if (f === 'boxQty' || f === 'lowStock') {
+            const n = parseNum(v); if (n === undefined) { bad = bad || e; e.classList.add('bad'); continue; }
+            v = f === 'boxQty' ? (n || 0) : n;
+          }
+          if (f === 'unit' && !v) v = '개';
+          patch[f] = v;
+        }
+        recs.push(Object.assign(it, patch));
+      }
+      if (bad) { toast('빨간 칸을 확인해 주세요. 품목명은 비울 수 없고, 숫자 칸에는 숫자만 넣어요.', { error: true }); bad.focus(); return; }
+      if (recs.length) saveMany('items', recs);
+      toast(`${recs.length}개 품목을 고쳤어요`);
+      S.itemGrid = false; gridApi = null; render();
+    },
+  };
+  update();
+}
+async function leaveGrid() {
+  if (gridApi && gridApi.dirty() && !(await confirmDialog({ title: '고친 내용을 버릴까요?', message: `아직 저장하지 않은 칸이 ${gridApi.dirty()}개 있어요.`, ok: '저장하지 않고 나가기', danger: true, cancel: '계속 고치기' }))) return false;
+  S.itemGrid = false; gridApi = null; return true;
+}
+
 function renderItemTab(box) {
+  if (S.itemGrid) return renderItemGrid(box);
   const all = itemsFor(S.shop, { archived: true });
   const arch = all.filter(i => i.archived);
   const show = S.showArchived ? arch : all.filter(i => !i.archived);
   const cats = catsFor(S.shop);
   box.innerHTML = `<div class="page-head"><div class="btn-row"><button class="btn primary" data-act="new-item">${svg('plus')}품목 추가</button><button class="btn" data-act="xl-import">엑셀에서 붙여넣기</button></div>
-    <button class="btn sm" data-act="toggle-archive">${S.showArchived ? '← 사용 중인 품목 보기' : `보관함 (${arch.length})`}</button></div>
+    <div class="btn-row">${S.showArchived ? '' : `<button class="btn sm" data-act="item-grid">${svg('edit')}표로 한 번에 고치기</button><button class="btn sm" data-act="items-csv">${svg('file')}엑셀로 내보내기</button>`}
+    <button class="btn sm" data-act="toggle-archive">${S.showArchived ? '← 사용 중인 품목 보기' : `보관함 (${arch.length})`}</button></div></div>
     ${S.showArchived ? '<div class="banner info"><span class="b-ico">📦</span><div><b>보관함</b>보관한 품목은 재고 세기·목록에서 숨겨지지만 지난 기록은 그대로 남아요.</div></div>' : ''}
     ${show.length ? cats.map(c => { const its = show.filter(i => i.categoryId === c.id); if (!its.length) return ''; return `<div class="sec-title"><span>${esc(c.name)} ${c.shop === 'common' ? '<span class="badge common">공용</span>' : ''}</span><span>${its.length}개</span></div>
       <ul class="list card">${its.map(i => `<li class="li">${avatar(i, '', true)}<div class="grow"><b>${esc(i.name)}</b>${commonBadge(i)}<small>${boxInfo(i)} · 단위 ${esc(i.unit || 'ea')}${i.lowStock != null && i.lowStock !== '' ? ` · 부족 기준 ${fmt(i.lowStock)}` : ''}${i.memo ? ' · ' + esc(i.memo) : ''}</small></div>
