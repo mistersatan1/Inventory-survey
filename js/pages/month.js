@@ -29,7 +29,7 @@ function renderMonth(main) {
     rs.forEach(({ i, c }) => {
       const ro = c.locked;
       body += `<tr data-item="${i.id}" data-ym="${ym}">
-        <td class="first"><div class="name-cell">${avatar(i, 'sm', true)}<div><b>${esc(i.name)}</b>${commonBadge(i)}${i.archived ? ' <span class="badge muted">보관됨</span>' : ''}<small>${boxInfo(i)}</small></div></div></td>
+        <td class="first"><div class="name-cell">${avatar(i, 'sm', true, false)}<div><b>${esc(i.name)}</b>${commonBadge(i)}${i.archived ? ' <span class="badge muted">보관됨</span>' : ''}<small>${boxInfo(i)}</small></div></div></td>
         <td class="n" data-label="처음 있던 수">${!ro && !c.prevAuto ? `<input class="mini-in" data-f="prev" inputmode="decimal" value="${plain(md(ym, i.id)?.prevManual)}" placeholder="0" aria-label="${esc(i.name)} 처음 있던 수"><span class="print-val">${fmt(c.prev)}</span>` : `<span class="v-prevval">${fmt(c.prev)}</span>`}</td>
         <td class="n" data-label="+ 반입"><span class="v-in">${fmt(c.inQ)}</span></td>
         <td class="n" data-label="− 반출"><span class="v-out">${fmt(c.outQ)}</span></td>

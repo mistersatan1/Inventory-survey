@@ -204,6 +204,60 @@ button.stat:hover{border-color:var(--g-400)}
 @media (max-width:599px){ .step-b{margin-left:0} }
 @media (min-width:900px){ .reason-list li{grid-template-columns:minmax(200px,280px) 1fr;align-items:center} }
 
+/* 단축키 안내: PC 촘촘 보기에서만 */
+.kbd-hint{display:none;align-items:center;gap:5px;margin-left:auto;font-size:var(--fs-xs);font-weight:700;color:var(--muted);white-space:nowrap}
+kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:5px;background:var(--surface);font:700 11.5px/1.5 var(--font);color:var(--ink-2);text-align:center}
+.crow-cols .c-reason{display:none}
+
+/* ---------- PC 촘촘 보기 (1200px 이상): 한 화면에 품목을 많이 ----------
+ * 휴대폰 손가락 크기 그대로면 PC에서 한 화면에 2개밖에 안 보여서, 넓은 화면에서는 엑셀 표처럼 줄인다. */
+@media (min-width:900px){
+  .grow-card{padding:6px var(--s-5) 6px 6px;border-radius:var(--r-lg);margin-bottom:var(--s-2)}
+  .plant{width:44px;height:44px} .plant svg{width:36px;height:36px}
+  .grow-txt{display:flex;align-items:center;gap:var(--s-4)}
+  .grow-top{flex:none;flex-wrap:nowrap;gap:var(--s-3)}
+  .grow-num{font-size:var(--fs-lg)}
+  .grow-msg{margin:0}
+  .grow-txt .bar{flex:1}
+  .period-line{margin-bottom:var(--s-2)}
+  .period-line .when small{display:none}
+  .banner{padding:var(--s-2) var(--s-4);margin-bottom:var(--s-2)}
+  .tools{display:flex;align-items:center;gap:var(--s-2);position:sticky;top:var(--top-h);z-index:10;background:var(--bg);padding:var(--s-2) 0;margin:0 0 var(--s-2)}
+  .tools .search{flex:1;min-width:200px;position:static;padding:0;margin:0;background:none}
+  .tools .search .inp{min-height:42px}
+  .tools-row{margin-top:0}
+  .grp{margin-bottom:var(--s-2);border-radius:var(--r-lg)}
+  .grp-head{min-height:42px;padding:4px var(--s-4);font-size:var(--fs-md)}
+  .crow,.crow-cols{grid-template-columns:minmax(160px,1fr) 250px 230px;column-gap:var(--s-3)}
+  .crow{padding:4px var(--s-4)}
+  .crow-cols{padding:5px var(--s-4)}
+  .crow-head{gap:var(--s-2);min-width:0}
+  .crow-head .av{width:32px;height:32px;font-size:11px}
+  .crow-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crow-name b{font-size:15px}
+  .crow-name small{display:inline;margin-left:6px;font-size:var(--fs-xs)}
+  .crow-in{gap:6px}
+  .crow-in input{min-height:38px;padding:3px 10px;font-size:var(--fs-md);border-width:1.5px}
+  .crow-res{border-radius:var(--r-sm);cursor:help}
+  .crow-res > div{min-height:38px;padding:2px 4px}
+  .crow-res .v{font-size:var(--fs-md)}
+  .crow-res .res-diff .v{font-size:var(--fs-sm)}
+  .crow .calc{display:none}
+  .crow .reason{margin:4px 0 2px}
+  .crow .reason input{min-height:36px;font-size:var(--fs-sm)}
+}
+/* 1200px 이상: 차이 난 까닭도 같은 줄에, 본문을 더 넓게, 단축키 안내 */
+@media (min-width:1200px){
+  main{max-width:1440px}
+  .tools-row{flex-wrap:nowrap;flex:2}
+  .kbd-hint{display:flex}
+  .crow,.crow-cols{grid-template-columns:minmax(220px,1.3fr) 290px 260px minmax(170px,1fr)}
+  .crow-cols .c-reason{display:block}
+  .crow .reason{grid-column:auto;margin:0}
+  .crow > .reason[hidden]{display:block!important;visibility:hidden} /* 칸 자리는 남겨 줄이 들쭉날쭉하지 않게 */
+  .crow .reason input{min-height:38px}
+}
+
 /* 엑셀 붙여넣기 */
 .howto{margin:0 0 var(--s-3);padding-left:20px;line-height:1.7}
 .xl-map{margin-top:var(--s-3);padding:var(--s-3);border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line-2)}

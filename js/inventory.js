@@ -183,10 +183,10 @@ function initials(name) {
   const w = String(name || '?').trim().split(/\s+/).filter(Boolean);
   return w.length > 1 ? w[0].charAt(0) + w[w.length - 1].charAt(0) : (w[0] || '?').charAt(0);
 }
-function avatar(item, size = '', zoom = false) {
+function avatar(item, size = '', zoom = false, tabStop = true) {
   const cls = `av ${size} ${item.photo ? '' : 'ph'}`;
   const inner = item.photo ? `<img src="${item.photo}" alt="">` : esc(initials(item.name));
-  return zoom ? `<button type="button" class="${cls}" data-act="zoom" data-id="${item.id}" aria-label="${esc(item.name)} 사진 크게 보기">${inner}</button>`
+  return zoom ? `<button type="button" class="${cls}" data-act="zoom" data-id="${item.id}" ${tabStop ? '' : 'tabindex="-1"'} aria-label="${esc(item.name)} 사진 크게 보기">${inner}</button>`
     : `<span class="${cls}" aria-hidden="true">${inner}</span>`;
 }
 /** 낱개 칸의 이름: 단위가 개·ea면 '낱개', 포대·g 같은 단위면 그 단위 (흙 0.3포대처럼 소수점도 됨) */
