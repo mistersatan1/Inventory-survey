@@ -20,8 +20,14 @@ function dKo(d) { const [, m, dd] = d.split('-').map(Number); return `${m}월 ${
 function fmt(n) { if (n === null || n === undefined || n === '') return '–'; const v = Calc.round(n); return v.toLocaleString('ko-KR', { maximumFractionDigits: 3 }).replace('-', '−'); }
 function fmtS(n) { if (n === null || n === undefined) return '–'; return n > 0 ? '+' + fmt(n) : fmt(n); }
 function plain(n) { return n === null || n === undefined ? '' : String(Calc.round(n)); }
+/** 숫자 글자 정리: 쉼표 하나 뒤에 1~2자리만 있으면 소수점(0,7 → 0.7, 일부 휴대폰 키보드),
+ *  그 밖의 쉼표는 천 단위 구분(1,200 → 1200) */
+function cleanNum(str) {
+  const s = String(str ?? '').replace(/\s/g, '');
+  return /^-?\d+,\d{1,2}$/.test(s) ? s.replace(',', '.') : s.replace(/,/g, '');
+}
 function parseNum(str, allowNeg) {
-  const s = String(str ?? '').replace(/[,\s]/g, '');
+  const s = cleanNum(str);
   if (s === '') return null;
   const re = allowNeg ? /^-?\d*\.?\d*$/ : /^\d*\.?\d*$/;
   if (!re.test(s) || s === '.' || s === '-') return undefined;

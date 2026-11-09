@@ -31,7 +31,7 @@ function splitTable(text) {
 }
 /** '1,234개', '12.5 kg' 같은 칸에서 숫자만 뽑는다. 숫자가 없으면 null */
 function numFrom(s) {
-  const m = String(s ?? '').replace(/[,\s]/g, '').match(/^-?\d+(\.\d+)?/);
+  const m = cleanNum(s).match(/^-?\d+(\.\d+)?/);
   return m ? Number(m[0]) : null;
 }
 /** 제목줄을 보고 열 역할을 짐작한다. 제목줄이 아니면 null */
