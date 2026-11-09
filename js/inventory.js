@@ -103,6 +103,7 @@ const S = {
   shop: 'gift', page: 'count',
   countQ: '', onlyEmpty: false, collapsed: new Set(),
   invCat: 'all', invQ: '', invSt: '',
+  countDate: todayStr(), // 재고 세기에서 '센 날짜' (종이에 적어 와서 다음 날 넣을 때 바꿈)
   monthYm: curYm(), movYm: curYm(), movFilter: { item: '', type: '', date: '' },
   mgTab: 'cat', showArchived: false,
   countDirty: false, noticeHidden: false,
@@ -138,11 +139,14 @@ function prevStock(item, ym) {
   const m = md(ym, item.id);
   return { value: m && m.prevManual != null ? m.prevManual : 0, auto: false, manual: !!(m && m.prevManual != null) };
 }
-function monthCalc(item, ym) {
+/** 재고 세기 화면이 보고 있는 달 = 센 날짜의 달 */
+function countYm() { return S.countDate.slice(0, 7); }
+/** upto: 반입·반출을 이 날짜까지 더한다 (기본: 이번 달이면 오늘, 지난달이면 말일) */
+function monthCalc(item, ym, upto) {
   const m = md(ym, item.id);
   if (m && m.snap) return { ...m.snap, prevAuto: true, locked: true, reason: m.reason || '', box: m.box, ea: m.ea };
   const p = prevStock(item, ym);
-  const { inQ, outQ } = Calc.sumMovements(movsOf(item.id), ym, ym === curYm() ? todayStr() : monthEnd(ym));
+  const { inQ, outQ } = Calc.sumMovements(movsOf(item.id), ym, upto || (ym === curYm() ? todayStr() : monthEnd(ym)));
   const sales = m && m.sales != null ? m.sales : 0;
   const expected = Calc.expected(p.value, inQ, outQ, sales);
   const counted = !!m && (m.box != null || m.ea != null);

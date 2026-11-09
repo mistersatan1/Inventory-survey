@@ -60,27 +60,49 @@ const storage = (() => {
     if (mode === 'idb') return reqP(db.transaction(s, 'readonly').objectStore(s).getAll());
     return Object.values(mem[s] || {});
   }
+  /* 같은 PC의 다른 탭에 "이 저장소가 바뀌었어요"라고 알린다.
+   * 탭마다 메모리에 옛 내용을 들고 있다가 저장하면 다른 탭에서 고친 내용을 덮어쓰기 때문.
+   * BroadcastChannel을 쓰고, file:// 등에서 안 되면 localStorage 'storage' 이벤트로 대신한다. */
+  const TAB = Math.random().toString(36).slice(2);
+  const listeners = []; const seen = new Set();
+  let bc = null; try { bc = new BroadcastChannel('inventory-survey'); } catch (e) { bc = null; }
+  function notify(stores) {
+    const msg = { from: TAB, stores, at: Date.now(), n: Math.random().toString(36).slice(2) };
+    try { if (bc) bc.postMessage(msg); } catch (e) { /* 무시 */ }
+    try { localStorage.setItem('inv:ping', JSON.stringify(msg)); } catch (e) { /* 무시 */ }
+  }
+  function receive(msg) {
+    if (!msg || msg.from === TAB || !Array.isArray(msg.stores)) return;
+    const key = msg.at + '|' + msg.n; if (seen.has(key)) return; seen.add(key);
+    if (mode === 'local') msg.stores.forEach(s => { try { mem[s] = JSON.parse(localStorage.getItem('inv:' + s) || '{}'); } catch (e) { mem[s] = {}; } });
+    listeners.forEach(f => f(msg.stores));
+  }
+  if (bc) bc.onmessage = e => receive(e.data);
+  window.addEventListener('storage', e => { if (e.key === 'inv:ping' && e.newValue) { try { receive(JSON.parse(e.newValue)); } catch (_) { /* 무시 */ } } });
+  function onRemoteChange(f) { listeners.push(f); }
+
   async function put(s, rec) {
     if (mode === 'idb') {
-      const t = db.transaction(s, 'readwrite'); t.objectStore(s).put(rec); return txDone(t);
-    }
-    mem[s][rec.id] = JSON.parse(JSON.stringify(rec)); persistLocal(s);
+      const t = db.transaction(s, 'readwrite'); t.objectStore(s).put(rec); await txDone(t);
+    } else { mem[s][rec.id] = JSON.parse(JSON.stringify(rec)); persistLocal(s); }
+    notify([s]);
   }
   async function putMany(s, recs) {
     if (mode === 'idb') {
-      const t = db.transaction(s, 'readwrite'); const os = t.objectStore(s); recs.forEach(r => os.put(r)); return txDone(t);
-    }
-    recs.forEach(r => { mem[s][r.id] = JSON.parse(JSON.stringify(r)); }); persistLocal(s);
+      const t = db.transaction(s, 'readwrite'); const os = t.objectStore(s); recs.forEach(r => os.put(r)); await txDone(t);
+    } else { recs.forEach(r => { mem[s][r.id] = JSON.parse(JSON.stringify(r)); }); persistLocal(s); }
+    notify([s]);
   }
   async function remove(s, id) {
-    if (mode === 'idb') { const t = db.transaction(s, 'readwrite'); t.objectStore(s).delete(id); return txDone(t); }
-    delete mem[s][id]; persistLocal(s);
+    if (mode === 'idb') { const t = db.transaction(s, 'readwrite'); t.objectStore(s).delete(id); await txDone(t); }
+    else { delete mem[s][id]; persistLocal(s); }
+    notify([s]);
   }
   async function clearAll() {
     if (mode === 'idb') {
-      const t = db.transaction(STORES, 'readwrite'); STORES.forEach(s => t.objectStore(s).clear()); return txDone(t);
-    }
-    STORES.forEach(s => { mem[s] = {}; persistLocal(s); });
+      const t = db.transaction(STORES, 'readwrite'); STORES.forEach(s => t.objectStore(s).clear()); await txDone(t);
+    } else STORES.forEach(s => { mem[s] = {}; persistLocal(s); });
+    notify(STORES);
   }
   async function exportAll() {
     const out = { app: 'inventory-survey', version: 1, exportedAt: new Date().toISOString(), stores: {} };
@@ -96,5 +118,6 @@ const storage = (() => {
     }
     STORES.forEach(s => { mem[s] = {}; (data.stores[s] || []).forEach(r => { mem[s][r.id] = r; }); persistLocal(s); });
   }
-  return { STORES, init, getAll, put, putMany, remove, clearAll, exportAll, importAll, get mode() { return mode; } };
+  async function importAllAndNotify(data) { await importAll(data); notify(STORES); }
+  return { STORES, init, getAll, put, putMany, remove, clearAll, exportAll, importAll: importAllAndNotify, onRemoteChange, get mode() { return mode; } };
 })();

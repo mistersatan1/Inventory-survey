@@ -30,11 +30,11 @@ function surveyGroups(shop) {
   return out;
 }
 function countRowHTML(item, ym) {
-  const c = monthCalc(item, ym);
+  const c = monthCalc(item, ym, S.countDate);
   const dis = c.locked ? 'disabled' : '';
   const noBox = !item.boxQty;
   const nm = esc(item.name);
-  return `<div class="crow ${c.counted ? 'counted' : ''}" data-item="${item.id}" data-ym="${ym}">
+  return `<div class="crow ${c.counted ? 'counted' : ''}" data-item="${item.id}" data-ym="${ym}" data-upto="${S.countDate}">
     <div class="crow-head">${avatar(item, '', true)}
       <div class="crow-name"><b>${nm}</b>${commonBadge(item)}<small>${boxInfo(item)}</small></div>
       <span class="state v-state"></span></div>
@@ -57,7 +57,7 @@ function countRowHTML(item, ym) {
 
 function refreshRow(row) {
   const item = DB.items.get(row.dataset.item); if (!item) return;
-  const ym = row.dataset.ym; const c = monthCalc(item, ym);
+  const ym = row.dataset.ym; const c = monthCalc(item, ym, row.dataset.upto || undefined);
   const set = (sel, html) => { const e = $(sel, row); if (e) e.innerHTML = html; };
   set('.v-total', c.counted ? fmt(c.actual) : '<span class="muted">–</span>');
   set('.v-cexp', fmt(c.expected));
@@ -83,7 +83,7 @@ function refreshRow(row) {
 }
 const PLANT_MSG = ['이제 세기 시작해요', '새싹이 났어요', '잎이 자라고 있어요', '거의 다 왔어요', '다 셌어요! 꽃이 피었어요'];
 function refreshCountSummary() {
-  const groups = surveyGroups(S.shop); const ym = curYm();
+  const groups = surveyGroups(S.shop); const ym = countYm();
   let total = 0, done = 0;
   groups.forEach(g => {
     const d = g.items.filter(i => monthCalc(i, ym).counted).length; total += g.items.length; done += d;
@@ -100,7 +100,7 @@ function refreshCountSummary() {
 
 function renderCountList() {
   const box = $('#countList'); if (!box) return;
-  const ym = curYm();
+  const ym = countYm();
   const groups = surveyGroups(S.shop);
   const q = S.countQ.trim();
   let html = '';
@@ -122,7 +122,7 @@ function renderCountList() {
   refreshCountSummary();
 }
 function renderCount(main) {
-  const ym = curYm(); const t = todayStr();
+  const ym = countYm(); const t = S.countDate; const isToday = t === todayStr();
   const items = itemsFor(S.shop);
   const locked = isConfirmed(S.shop, ym);
   const cps = [...DB.checkpoints.values()].filter(c => c.shop === S.shop);
@@ -141,9 +141,11 @@ function renderCount(main) {
       </div>
     </div>
     <div class="period-line">
-      <div class="when num">${mLabel(ym)} 1일 ~ ${dKo(t)} 점검<small>숫자는 넣는 즉시 저장돼요. 다 세면 [오늘 기록 남기기]로 오늘 결과를 날짜별로 남겨요.</small></div>
-      <button class="btn sm" data-act="cp-history">${svg('history')}지난 기록 (${cps.length})</button>
+      <div class="when num">${mLabel(ym)} 1일 ~ ${dKo(t)} 점검<small>숫자는 넣는 즉시 저장돼요. 다 세면 [${isToday ? '오늘' : dKo(t)} 기록 남기기]로 결과를 날짜별로 남겨요.</small></div>
+      <div class="btn-row"><label class="count-date"><span>센 날짜</span><input class="inp" type="date" id="countDate" value="${t}" max="${todayStr()}" aria-label="센 날짜"></label>
+      <button class="btn sm" data-act="cp-history">${svg('history')}지난 기록 (${cps.length})</button></div>
     </div>
+    ${isToday ? '' : `<div class="banner date"><span class="b-ico">📅</span><div><b>${ymLabel(ym).slice(0, 5)} ${dKo(t)}에 센 것으로 넣고 있어요.</b>종이에 적어 온 걸 옮길 때만 쓰세요. ${ym !== curYm() ? `${mLabel(ym)} 기록으로 들어가요.` : ''}<br><button class="btn sm" data-act="count-today">오늘 날짜로 돌아가기</button></div></div>`}
     ${locked ? `<div class="banner lock"><span class="b-ico">🔒</span><div><b>${mLabel(ym)}은 마감되어 고칠 수 없어요.</b>고치려면 월말 정산에서 [마감 풀기]를 눌러 주세요.<br><button class="btn sm" data-act="nav" data-page="month">월말 정산 열기</button></div></div>` : ''}
     ${startMissing ? `<div class="banner start"><span class="b-ico">🌱</span><div><b>먼저 품목마다 ‘처음 있던 수’를 넣어 주세요.</b>지난달 말에 창고에 있던 수예요. 이걸 넣어야 ‘있어야 할 수’가 맞게 나와요. (아직 ${startMissing}개)<br><span class="btn-row"><button class="btn primary sm" data-act="start-stock">처음 있던 수 넣기</button><button class="btn sm" data-act="xl-import">엑셀 재고표 붙여넣기</button></span></div></div>` : ''}
     <div class="tools">
@@ -157,11 +159,16 @@ function renderCount(main) {
     <div id="countList"></div>
     <div class="bottom-bar no-print">
       <div class="save-state" id="saveState" role="status"></div>
-      <button class="btn primary" data-act="save-cp" ${locked ? 'disabled' : ''}>오늘 기록 남기기</button>
+      <button class="btn primary" data-act="save-cp" ${locked ? 'disabled' : ''}>${isToday ? '오늘' : dKo(t)} 기록 남기기</button>
     </div>`;
   renderCountList();
   renderSaveState();
   $('#countQ').addEventListener('input', e => { S.countQ = e.target.value; renderCountList(); });
+  $('#countDate').addEventListener('change', e => {
+    const v = e.target.value; const today = todayStr();
+    S.countDate = !v ? today : v > today ? today : v; // 앞날은 고를 수 없음
+    renderCount(main);
+  });
   $('#onlyEmpty').addEventListener('change', e => { S.onlyEmpty = e.target.checked; renderCountList(); });
 }
 function renderSaveState() {
@@ -173,10 +180,10 @@ function renderSaveState() {
 saveListeners.push(renderSaveState);
 
 function saveCheckpoint() {
-  const ym = curYm();
+  const ym = countYm();
   const items = itemsFor(S.shop);
   const rows = items.map(i => { const c = monthCalc(i, ym); return { itemId: i.id, name: i.name, counted: c.counted, actual: c.actual, expected: c.expected, diff: c.diff, sales: c.sales, reason: c.reason }; });
-  const rec = { id: uid(), shop: S.shop, ym, date: todayStr(), savedAt: Date.now(), rows };
+  const rec = { id: uid(), shop: S.shop, ym, date: S.countDate, savedAt: Date.now(), rows };
   save('checkpoints', rec);
   S.countDirty = false;
   const done = rows.filter(r => r.counted).length;
@@ -226,7 +233,7 @@ function startStockItems(ym) {
   return itemsFor(S.shop).filter(i => { const c = monthCalc(i, ym); return !c.locked && !c.prevAuto; });
 }
 function startStock() {
-  const ym = curYm(); const items = startStockItems(ym);
+  const ym = countYm(); const items = startStockItems(ym);
   if (!items.length) { toast('지난달 마감 결과가 이미 들어가 있어서 넣을 품목이 없어요.'); return; }
   const rows = items.map(i => `<label class="ss-row" data-id="${i.id}">${avatar(i, 'sm')}<span class="grow"><b>${esc(i.name)}</b><small>${esc(catOf(i)?.name || '')} · 단위 ${esc(i.unit || 'ea')}</small></span>
     <input class="inp num" inputmode="decimal" autocomplete="off" value="${plain(md(ym, i.id)?.prevManual)}" placeholder="0" aria-label="${esc(i.name)} 처음 있던 수"></label>`).join('');
@@ -261,7 +268,7 @@ function startStock() {
 }
 
 function pasteSales() {
-  const label = salesLabel(); const ym = curYm();
+  const label = salesLabel(); const ym = countYm();
   const items = itemsFor(S.shop).filter(i => !isLocked(i, ym));
   let parsed = { matched: [], unmatched: [] };
   openModal({ title: `${label} 수량 붙여넣기`, wide: true,

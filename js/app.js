@@ -145,6 +145,7 @@ const actions = {
   'order-list': () => openOrderList(),
   'share-backup': () => shareBackup(),
   'count-empty': () => { S.onlyEmpty = true; go('count'); },
+  'count-today': () => { S.countDate = todayStr(); renderCount($('#main')); },
   'new-item': () => { if (!catsFor(S.shop).length) toast('카테고리가 없어 새로 만들어요. 아래에서 이름을 넣어 주세요.'); openItemEditor(null, { cat: S.invCat }); },
   'edit-item': el => openItemEditor(el.dataset.id),
   'new-cat': () => openCategoryEditor(),
@@ -194,7 +195,7 @@ document.addEventListener('input', e => {
   else {
     const v = parseNum(el.value, f === 'prev'); el.classList.toggle('bad', v === undefined);
     if (v === undefined) return;
-    if (f === 'box' || f === 'ea') { m[f] = v; m.countedAt = Date.now(); m.countDate = ym === curYm() ? todayStr() : monthEnd(ym); m.countedShop = S.shop; }
+    if (f === 'box' || f === 'ea') { m[f] = v; m.countedAt = Date.now(); m.countDate = S.page === 'count' && S.countDate.slice(0, 7) === ym ? S.countDate : ym === curYm() ? todayStr() : monthEnd(ym); m.countedShop = S.shop; }
     else if (f === 'sales') m.sales = v;
     else if (f === 'prev') m.prevManual = v;
   }
@@ -217,6 +218,21 @@ document.addEventListener('focusout', e => {
   const sw = $('#shopSwitch'); const m = $('#shopMenu');
   if (sw && m && !m.hidden && sw.contains(e.target) && !sw.contains(e.relatedTarget)) toggleShopMenu(false);
 });
+/* ---------- 같은 PC의 다른 탭에서 바뀐 내용 반영 ---------- */
+let remotePending = false;
+function isBusy() {
+  const a = document.activeElement;
+  return !!document.querySelector('.modal-back') || !!(a && a.closest && a.closest('#main') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+}
+function flushRemote() {
+  if (!remotePending || isBusy() || !DB.items) return;
+  remotePending = false; const y = window.scrollY; render(); window.scrollTo(0, y);
+}
+storage.onRemoteChange(async stores => {
+  for (const s of stores) if (DB[s]) DB[s] = new Map((await storage.getAll(s)).map(r => [r.id, r]));
+  remotePending = true; flushRemote();
+});
+setInterval(flushRemote, 800); // 입력을 마치거나 창을 닫으면 반영
 window.addEventListener('hashchange', () => { const p = location.hash.slice(1); if (PAGES.some(x => x.id === p) && p !== S.page) go(p); });
 /* =====================================================================
  * 15. 시작

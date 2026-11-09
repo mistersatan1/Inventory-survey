@@ -169,7 +169,7 @@ function openItemEditor(id, opts = {}) {
     }
     const box = parseNum($('#iBox', el).value), low = parseNum($('#iLow', el).value);
     if (box === undefined || low === undefined) { toast('숫자 칸에는 숫자만 넣어 주세요.', { error: true }); return false; }
-    const rec = it || { id: uid(), createdAt: Date.now(), order: Date.now(), archived: false };
+    const rec = it ? (DB.items.get(it.id) || it) : { id: uid(), createdAt: Date.now(), order: Date.now(), archived: false };
     Object.assign(rec, { name, categoryId: catId, unit: $('#iUnit', el).value.trim() || '개', boxQty: box || 0, lowStock: low, memo: $('#iMemo', el).value.trim(), photo });
     save('items', rec);
     toast(it ? `‘${name}’ 정보를 저장했어요` : `‘${name}’ 품목을 등록했어요`);
