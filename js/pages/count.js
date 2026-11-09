@@ -35,7 +35,7 @@ function countRowHTML(item, ym) {
   const noBox = !item.boxQty;
   const nm = esc(item.name);
   return `<div class="crow ${c.counted ? 'counted' : ''}" data-item="${item.id}" data-ym="${ym}" data-upto="${S.countDate}">
-    <div class="crow-head">${avatar(item, '', true)}
+    <div class="crow-head">${avatar(item, '', true, false)}
       <div class="crow-name"><b>${nm}</b>${commonBadge(item)}<small>${boxInfo(item)}</small></div>
       <span class="state v-state"></span></div>
     <div class="crow-in">
@@ -73,7 +73,9 @@ function refreshRow(row) {
     st.className = 'state v-state ' + (c.counted ? 'on' : 'off'); st.textContent = c.counted ? '✓ 셌어요' + other : '아직';
   }
   row.classList.toggle('counted', c.counted);
-  set('.v-calc', `처음 ${fmt(c.prev)} + 반입 ${fmt(c.inQ)} − 반출 ${fmt(c.outQ)} − ${esc(salesLabel())} ${fmt(c.sales)}`);
+  const calcTxt = `처음 ${fmt(c.prev)} + 반입 ${fmt(c.inQ)} − 반출 ${fmt(c.outQ)} − ${salesLabel()} ${fmt(c.sales)}`;
+  set('.v-calc', esc(calcTxt));
+  const rs = $('.crow-res', row); if (rs) rs.title = `있어야 할 수 ${fmt(c.expected)} = ${calcTxt}`;
   const rw = $('.v-reason', row); if (rw) rw.hidden = !((c.counted && c.diff !== 0) || c.reason);
   // 월말 정산 표의 칸들
   set('.v-prevval', fmt(c.prev)); set('.v-in', fmt(c.inQ)); set('.v-out', fmt(c.outQ)); set('.v-sales', fmt(c.sales));
@@ -113,7 +115,7 @@ function renderCountList() {
     html += `<section class="grp"><button class="grp-head" data-act="toggle-grp" data-key="${esc(g.key)}" aria-expanded="${!!open}">${svg('chev', 'chev')}
       <span class="gname">${esc(g.name)}${g.common ? ' <span class="badge common">공용</span>' : ''}${g.kind ? ' <span class="badge muted">묶음</span>' : ''}</span>
       <span class="grp-cnt" data-gcnt="${esc(g.key)}"></span></button>
-      <div class="grp-body" ${open ? '' : 'hidden'}><div class="crow-cols" aria-hidden="true"><span>품목</span><span class="c3"><span>박스</span><span>낱개</span><span>${esc(salesLabel())}</span></span><span class="c3"><span>있어야 할 수</span><span>센 수</span><span>차이</span></span></div>${its.map(i => countRowHTML(i, ym)).join('')}</div></section>`;
+      <div class="grp-body" ${open ? '' : 'hidden'}><div class="crow-cols" aria-hidden="true"><span>품목</span><span class="c3"><span>박스</span><span>낱개</span><span>${esc(salesLabel())}</span></span><span class="c3"><span>있어야 할 수</span><span>센 수</span><span>차이</span></span><span class="c-reason">차이 난 까닭</span></div>${its.map(i => countRowHTML(i, ym)).join('')}</div></section>`;
   });
   if (!shown) html = q ? `<div class="empty"><span class="e-ico">🔍</span><strong>‘${esc(q)}’에 맞는 품목이 없어요</strong><p>초성(예: ㅇㄹㅂ)이나 이름 일부로도 찾을 수 있어요.</p><button class="btn" data-act="clear-count-q">검색 지우기</button></div>`
     : `<div class="empty"><span class="e-ico">🌸</span><strong>모든 품목을 셌어요</strong><p>이제 아래 [오늘 기록 남기기]를 눌러 오늘 센 결과를 남겨 주세요.</p><button class="btn" data-act="show-all">전체 품목 보기</button></div>`;
@@ -154,6 +156,7 @@ function renderCount(main) {
         ${start.length && !startMissing ? `<button class="btn sm" data-act="start-stock">처음 있던 수 고치기</button>` : ''}
         <label class="toggle"><input type="checkbox" id="onlyEmpty" ${S.onlyEmpty ? 'checked' : ''}> 아직 안 센 것만</label>
         <button class="btn sm" data-act="paste-sales" ${locked ? 'disabled' : ''}>${svg('file')}${esc(salesLabel())} 수량 붙여넣기</button>
+        <span class="kbd-hint" aria-hidden="true"><kbd>Enter</kbd> 아래 품목 <kbd>Tab</kbd> 옆 칸 <kbd>/</kbd> 찾기</span>
       </div>
     </div>
     <div id="countList"></div>

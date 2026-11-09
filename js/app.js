@@ -205,14 +205,32 @@ document.addEventListener('input', e => {
   if (S.page === 'count') { S.countDirty = true; refreshRow(row); refreshCountSummary(); }
   else { refreshRow(row); refreshMonthSummary(); }
 });
-// 엔터/다음 → 다음 입력 칸
+// Enter → 아래 품목의 같은 칸 (엑셀처럼), Shift+Enter → 위 품목. 옆 칸은 Tab.
+function nextCell(el, dir) {
+  const row = el.closest('[data-item]'); if (!row) return null;
+  const f = el.dataset.f; const kind = row.tagName + '.' + (row.classList[0] || '');
+  const rows = $$('#main [data-item]').filter(r => r.tagName + '.' + (r.classList[0] || '') === kind && r.offsetParent !== null);
+  const ok = x => x && !x.disabled && x.offsetParent !== null && getComputedStyle(x).visibility !== 'hidden';
+  for (let k = rows.indexOf(row) + dir; k >= 0 && k < rows.length; k += dir) {
+    const same = $(`input[data-f="${f}"]`, rows[k]); if (ok(same)) return same;
+    const ea = $('input[data-f="ea"]', rows[k]); if (f === 'box' && ok(ea)) return ea; // 박스 기준이 없는 품목은 낱개 칸으로
+  }
+  return null;
+}
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter' || e.isComposing) return;
   const el = e.target; if (!el.matches || !el.matches('#main input[data-f]')) return;
   e.preventDefault();
-  const all = $$('#main input[data-f]').filter(x => !x.disabled && x.offsetParent !== null);
-  const next = all[all.indexOf(el) + 1];
-  if (next) { next.focus(); next.select && next.select(); next.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else el.blur();
+  const next = nextCell(el, e.shiftKey ? -1 : 1);
+  if (next) { next.focus(); if (next.select) next.select(); next.scrollIntoView({ block: 'nearest' }); } else el.blur();
+});
+// '/' → 품목 찾기 칸으로 (글자를 넣는 중이 아닐 때)
+document.addEventListener('keydown', e => {
+  if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || $('.modal-back')) return;
+  const a = document.activeElement;
+  if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+  const q = $('#countQ') || $('#invQ'); if (!q) return;
+  e.preventDefault(); q.focus(); q.select();
 });
 document.addEventListener('focusout', e => {
   const sw = $('#shopSwitch'); const m = $('#shopMenu');
