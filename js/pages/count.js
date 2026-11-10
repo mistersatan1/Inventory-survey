@@ -149,6 +149,7 @@ function renderCount(main) {
     </div>
     ${isToday ? '' : `<div class="banner date"><span class="b-ico">📅</span><div><b>${ymLabel(ym).slice(0, 5)} ${dKo(t)}에 센 것으로 넣고 있어요.</b>종이에 적어 온 걸 옮길 때만 쓰세요. ${ym !== curYm() ? `${mLabel(ym)} 기록으로 들어가요.` : ''}<br><button class="btn sm" data-act="count-today">오늘 날짜로 돌아가기</button></div></div>`}
     ${locked ? `<div class="banner lock"><span class="b-ico">🔒</span><div><b>${mLabel(ym)}은 마감되어 고칠 수 없어요.</b>고치려면 월말 정산에서 [마감 풀기]를 눌러 주세요.<br><button class="btn sm" data-act="nav" data-page="month">월말 정산 열기</button></div></div>` : ''}
+    ${hasSampleData() ? `<div class="banner info sample"><span class="b-ico">🧪</span><div><b>지금 보이는 품목은 둘러보기용 샘플이에요.</b>실제로 쓰기 전에 [전체 초기화]로 한 번에 지울 수 있어요.<br><button class="btn sm danger" data-act="wipe">전체 초기화</button></div></div>` : ''}
     ${startMissing ? `<div class="banner start"><span class="b-ico">🌱</span><div><b>먼저 품목마다 ‘처음 있던 수’를 넣어 주세요.</b>지난달 말에 창고에 있던 수예요. 이걸 넣어야 ‘있어야 할 수’가 맞게 나와요. (아직 ${startMissing}개)<br><span class="btn-row"><button class="btn primary sm" data-act="start-stock">처음 있던 수 넣기</button><button class="btn sm" data-act="xl-import">엑셀 재고표 붙여넣기</button></span></div></div>` : ''}
     <div class="tools">
       <div class="search">${svg('search')}<input class="inp" id="countQ" type="search" value="${esc(S.countQ)}" placeholder="품목 찾기 (예: 유리병, ㅇㄹㅂ)" aria-label="품목 찾기" autocomplete="off"></div>

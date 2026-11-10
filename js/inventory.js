@@ -191,6 +191,11 @@ function avatar(item, size = '', zoom = false, tabStop = true) {
 }
 /** 낱개 칸의 이름: 단위가 개·ea면 '낱개', 포대·g 같은 단위면 그 단위 (흙 0.3포대처럼 소수점도 됨) */
 function unitLabel(item) { const u = String(item?.unit || '').trim(); return !u || /^(개|ea)$/i.test(u) ? '낱개' : u; }
+/** 둘러보기용 샘플이 들어 있나 (샘플로 시작했거나, 샘플 반출입 기록이 남아 있음) */
+function hasSampleData() {
+  if (!DB.items || !DB.items.size) return false;
+  return meta.get('sampleLoaded', false) || [...DB.movements.values()].some(m => String(m.memo || '').startsWith('샘플:'));
+}
 const commonBadge = item => isCommon(item) ? ' <span class="badge common">공용</span>' : '';
 const boxInfo = item => item.boxQty ? `1박스=${fmt(item.boxQty)}${esc(item.unit || 'ea')}` : '박스 기준 없음';
 const salesLabel = () => SHOPS[S.shop].sales;
