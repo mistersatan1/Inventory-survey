@@ -26,8 +26,8 @@ function renderSettings(main) {
       <p class="small muted" style="margin:8px 0 0">두 사람이 같은 품목을 같은 날 따로 세면 나중에 넣은 숫자만 남아요. 품목을 나눠서 세는 게 좋아요.</p></section>
     <section class="card"><h2>계산 자체 테스트</h2><p class="small muted" style="margin:0 0 10px">계산 규칙이 엑셀 예시와 같은 결과를 내는지 확인해요. (콘솔에서 <code>Calc.selfTest()</code>로도 실행 가능)</p>
       <button class="btn" data-act="selftest">계산 테스트 실행</button><div id="testOut"></div></section>
-    <section class="card danger-zone"><h2>처음부터 다시</h2><p class="small muted" style="margin:0 0 10px">모든 품목·기록·사진을 이 기기에서 지워요. 먼저 백업을 받아 두세요.</p>
-      <button class="btn danger" data-act="wipe">모든 데이터 지우기</button></section>`;
+    <section class="card danger-zone" id="wipeCard"><h2>전체 초기화</h2><p class="small muted" style="margin:0 0 10px">연습용 샘플이나 잘못 넣은 데이터를 한 번에 지우고 처음부터 시작해요. 이 기기의 품목·기록·사진이 모두 지워지니, 남길 게 있으면 먼저 백업을 받아 두세요.</p>
+      <button class="btn danger" data-act="wipe">전체 초기화</button></section>`;
   $('#mergeFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) openMerge(f); });
   $('#restoreFile').addEventListener('change', async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
@@ -49,10 +49,17 @@ async function doBackup() {
   toast('백업 파일을 저장했어요. 안전한 곳에 보관하세요.');
   render();
 }
+/** 전체 초기화: 경고창 한 번 → [전체 초기화]를 누르면 이 기기의 모든 데이터를 지운다 */
 async function wipeAll() {
-  const a = await confirmDialog({ title: '모든 데이터 지우기', message: '품목, 사진, 반출입, 점검·정산 기록이 <b>모두</b> 지워져요. 계속할까요?', ok: '다음 단계', danger: true });
-  if (!a) return;
-  const b = await confirmDialog({ title: '정말 지울까요?', message: '되돌릴 수 없어요. 백업 파일이 없으면 복구할 수 없어요.', ok: '모든 데이터 지우기', danger: true });
-  if (!b) return;
-  await storage.clearAll(); await loadAll(); S.countDirty = false; await firstRun();
+  const n = st => DB[st] ? DB[st].size : 0;
+  const ok = await confirmDialog({ title: '전체 초기화', danger: true, ok: '전체 초기화', cancel: '취소',
+    message: `<div class="banner warn" style="margin:0 0 10px"><span class="b-ico">⚠️</span><div><b>이 기기의 데이터가 전부 지워져요.</b>
+      품목 ${n('items')}개 · 카테고리 ${n('categories')}개 · 반출입 ${n('movements')}건 · 남긴 기록 ${n('checkpoints')}건, 그리고 센 수·마감·사진까지 모두 지워지고 <b style="display:inline">되돌릴 수 없어요.</b></div></div>
+      <p class="small muted" style="margin:0">남겨 둘 게 있으면 [취소]를 누르고 먼저 [전체 데이터 백업]을 받아 두세요. 다른 기기에 있는 데이터는 지워지지 않아요.</p>` });
+  if (!ok) return;
+  await storage.clearAll(); await loadAll();
+  Object.assign(S, { countDirty: false, countDate: todayStr(), countQ: '', onlyEmpty: false, invCat: 'all', invQ: '', invSt: '', itemGrid: false, showArchived: false });
+  S.collapsed.clear();
+  toast('모든 데이터를 지웠어요. 처음부터 시작해요.');
+  await firstRun();
 }

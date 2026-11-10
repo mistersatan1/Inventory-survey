@@ -121,7 +121,7 @@ async function firstRun() {
       <li><b>엑셀에서 붙여넣기</b>: 지금 쓰는 엑셀 재고표를 복사해 붙여넣으면 품목과 재고가 한 번에 들어가요.</li>
       <li><b>빈 상태</b>: 카테고리와 품목을 직접 등록해요.</li></ul>`,
     actions: [{ label: '빈 상태로 시작', value: 'empty' }, { label: '엑셀에서 붙여넣기', value: 'excel' }, { label: '샘플 데이터 넣기', value: 'sample', cls: 'primary' }] });
-  if (v === 'sample') { const d = sampleData(); for (const s of ['categories', 'items', 'groups', 'movements']) await saveMany(s, d[s]); }
+  if (v === 'sample') { const d = sampleData(); for (const s of ['categories', 'items', 'groups', 'movements']) await saveMany(s, d[s]); await meta.set('sampleLoaded', true); }
   await meta.set('initializedAt', Date.now());
   S.page = 'count';
   render();
@@ -257,6 +257,7 @@ function flushRemote() {
 }
 storage.onRemoteChange(async stores => {
   for (const s of stores) if (DB[s]) DB[s] = new Map((await storage.getAll(s)).map(r => [r.id, r]));
+  if (!meta.get('initializedAt', null)) { location.reload(); return; } // 다른 탭에서 전체 초기화함
   remotePending = true; flushRemote();
 });
 setInterval(flushRemote, 800); // 입력을 마치거나 창을 닫으면 반영

@@ -37,7 +37,7 @@ function openModal({ title, body, actions = [], wide = false, onMount, dismissab
       else close(a.value);
     }));
     if (onMount) onMount(ctx);
-    const first = $('input:not([type=hidden]):not([disabled]),select,textarea', $('.modal-b', el)) || $('.modal-f .btn.primary,.modal-f .btn.danger', el) || el;
+    const first = $('input:not([type=hidden]):not([disabled]),select,textarea', $('.modal-b', el)) || $('.modal-f .btn.primary', el) || $('.modal-f .btn', el) || el;
     setTimeout(() => first.focus && first.focus(), 30);
   });
 }
