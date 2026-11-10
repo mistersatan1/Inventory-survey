@@ -102,7 +102,7 @@ const SHOPS = {
 const S = {
   shop: 'gift', page: 'count',
   countQ: '', onlyEmpty: false, collapsed: new Set(),
-  invCat: 'all', invQ: '', invSt: '',
+  invCat: 'all', invQ: '', invSt: '', invSort: { key: 'cat', dir: 1 }, itemGrid: false,
   countDate: todayStr(), // 재고 세기에서 '센 날짜' (종이에 적어 와서 다음 날 넣을 때 바꿈)
   monthYm: curYm(), movYm: curYm(), movFilter: { item: '', type: '', date: '' },
   mgTab: 'cat', showArchived: false,
