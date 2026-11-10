@@ -1,0 +1,58 @@
+/* =====================================================================
+ * 디자인 토큰 — 색·글자·간격·모서리는 여기서만 정한다.
+ * 컨셉: 식물원. 기념품숍은 숲 초록, 체험장은 온실 청록.
+ * 색만으로 뜻을 전하지 않는다(부족/남음은 항상 글자와 함께).
+ * ===================================================================== */
+:root{
+  /* 초록 단계 (숲) */
+  --g-50:#f3f8f2; --g-100:#e4f1e6; --g-200:#c8e3cc; --g-300:#a8dcae; --g-400:#6fb27a;
+  --g-500:#3f8a52; --g-600:#2c7044; --g-700:#1f5a3a; --g-800:#17452c; --g-900:#0f2e1e;
+
+  /* 바탕·글자 */
+  --bg:#f3f8f2;          /* 연한 잎 빛 바탕 */
+  --surface:#ffffff;
+  --surface-2:#f7fbf6;   /* 카드 속 옅은 칸 */
+  --line:#d6e6d8;
+  --line-2:#e8f1e8;
+  --ink:#14301f;         /* 본문 글자 */
+  --ink-2:#3d5646;       /* 보조 글자 (대비 7:1 이상) */
+  --muted:#5b7263;       /* 설명 글자 (대비 4.8:1) */
+  --faint:#61786a;       /* 입력 안내 글자 (대비 4.7:1) */
+  --line-strong:#7a9583; /* 입력칸 테두리 (대비 3:1 이상) */
+
+  /* 매장 색 — body[data-shop]에서 바뀜 */
+  --brand:var(--g-700); --brand-strong:var(--g-800); --brand-soft:var(--g-100); --brand-tint:var(--g-50);
+  --brand-on:#ffffff; --leaf:var(--g-300);
+  --brand-line:var(--g-200); --brand-ring:rgba(63,138,82,.22); --brand-ink:var(--g-700);
+
+  /* 뜻이 있는 색 */
+  --minus:#b42318; --minus-bg:#fdecea; --minus-line:#f3c1bb;   /* 부족 */
+  --plus:#1d5fb8;  --plus-bg:#e8f0fc;  --plus-line:#c3d6f3;    /* 더 많음 */
+  --ok:#1f7a45;    --ok-bg:#e1f3e6;    --ok-line:#b7e0c3;      /* 딱 맞음 · 입력됨 */
+  --warn:#7a5200;  --warn-bg:#fff5d6;  --warn-line:#efdc9f;    /* 주의 */
+  --common:#5b4a9e; --common-bg:#eeebfa;                       /* 공용 */
+
+  /* 글자 */
+  --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Segoe UI",sans-serif;
+  --fs-xs:13px; --fs-sm:14px; --fs-md:16px; --fs-lg:18px; --fs-xl:22px; --fs-2xl:28px; --fs-num:20px;
+
+  /* 간격 (4px 단위) */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-8:32px;
+
+  /* 모서리: 큰 틀일수록 둥글게 */
+  --r-xl:22px; --r-lg:16px; --r-md:12px; --r-sm:9px; --r-pill:999px;
+
+  /* 높이 */
+  --tap:48px; --tab-h:68px; --top-h:60px; --side-w:232px;
+
+  --shadow-sm:0 1px 2px rgba(15,46,30,.06);
+  --shadow-lg:0 12px 32px rgba(15,46,30,.18);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:light;
+}
+
+/* 체험장: 온실 유리 같은 청록 초록 */
+body[data-shop="exp"]{
+  --brand:#1e6b63; --brand-strong:#14524b; --brand-soft:#dcefeb; --brand-tint:#eff8f6; --leaf:#c2ece3;
+  --brand-line:#b5ddd5; --brand-ring:rgba(30,107,99,.22); --brand-ink:#14524b;
+}
